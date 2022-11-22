@@ -1,0 +1,11 @@
+def output:edge = st1, st2, 
+                    journey_viz:edge_attribute[st1, st2, "label"],
+                    if journey_viz:edge_attribute(st1, st2, "fontcolor", _)
+                    then journey_viz:edge_attribute[st1, st2, "fontcolor"]
+                    else "black" end
+                    from st1, st2 where journey_viz:edge(st1,st2)
+
+def node_type[n] = "place", journey_viz:step_place(n)
+def node_type[n] = "sensor",  journey_viz:journey:sensor_steps(_, n)
+
+def output:node = n, journey_viz:node_attribute[n, "label"], node_type[n] from n where journey_viz:node(n) 

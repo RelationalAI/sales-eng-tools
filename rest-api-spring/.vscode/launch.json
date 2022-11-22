@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-StackexchangedataserviceApplication<stackexchangedataservice>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ai.relational.samples.spring.stackexchange.stackexchangedataservice.StackexchangedataserviceApplication",
+            "projectName": "stackexchangedataservice",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-StackexchangedataserviceApplication<stackexchangedataservice>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ai.relational.samples.spring.StackexchangedataserviceApplication",
+            "projectName": "stackexchangedataservice",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

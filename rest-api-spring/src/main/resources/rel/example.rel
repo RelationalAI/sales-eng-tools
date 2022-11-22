@@ -1,0 +1,13 @@
+def flight_number = "${flight_number}" 
+
+def nodes = ("1", "John", "pilot");("2","1000", "flight"); ("3", "Anne", "passenger")
+def nodes = ("4", "Grace", "pilot");("5","2000", "flight"); ("6", "Peter", "passenger")
+def edges = ("1","2");("3","2")
+def edges = ("4","5");("6","5")
+
+def flight_id = n : nodes(n,flight_number,"flight")
+def flight_edges = s, t : edges(s,t) and (s = flight_id or t= flight_id)
+def flight_nodes = n : flight_edges(n,_) or flight_edges(_,n)
+
+def output:edge = flight_edges
+def output:node [n in flight_nodes] =  nodes[n]

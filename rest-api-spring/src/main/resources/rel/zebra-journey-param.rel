@@ -1,0 +1,203 @@
+entity type Step = Hash, Hash, DateTime
+
+// explore an item's journey as an ordered, filtered series of events.
+// The "macGuffin" parameter is the item's URN (or other String identifier).
+// It is the thing we're looking for (https://en.wikipedia.org/wiki/MacGuffin).
+// N.B. do not capitalize (e.g. MACGUFFIN) or will be treated as higher order.
+
+// for now, parameterized module performs more slowly than static one,
+// so we manually swap our test cases and noise filter option.
+
+// ***** test cases *****
+// def item5  = "urn:epc:id:sgtin:0195500.500539.1336710" // item with 5-step journey
+// def item10 = "urn:epc:id:sgtin:0195500.500539.1338532" // item with 10-step journey
+// def item11 = "urn:epc:id:sgtin:0195500.500160.1315546"
+
+def search_item = "urn:epc:id:sgtin:${item_id}"
+def macGuffin = search_item
+def filter_noise = 0           // false
+
+// module item_journey[macGuffin in String, filter_noise in Int]
+// module item_journey[macGuffin in String, filter_noise in Int]
+module item_journey
+
+    // entity ID for the item we care about
+    def mge(e) = zm2:item:id(e, macGuffin)
+
+    // just the events for this item
+    def item_events(ev) = zm2:edges:event_item(ev, mge)
+
+    // sensor scans for this item
+    def sensor_scans(ts, ev, it, se) =
+        item_events(ev) and
+        zm2:edges:event_item(ev, it) and
+        zm2:edges:event_sensor(ev, se, ts)
+
+    // time-ordered sequence of sensor scans for this item
+    def sensor_path = sort[sensor_scans]
+
+    def sensor_steps(ts, st) =
+        step_from_scan(_, _, ts, st) and not Noise(st)
+    def sorted_steps = sort[sensor_steps]
+
+    // ***** define journey attributes from the steps *****
+
+    def timestamp(rank in Int, ts) =
+        journey_step:rank(e, rank) and
+        journey_step:ts(e, ts)
+        from e
+
+    def interval(rank in Int, mins) =
+        journey_step:rank(e, rank) and
+        mins = (string[journey_step:interval[e]] <++ "---")
+        from e
+
+    def bizLoc(rank in Int, bizLoc) =
+        journey_step:rank(e, rank) and
+        journey_step:event(e, ev) and
+        zm2:event:bizLoc(ev, bizLoc)
+        from e, ev
+
+    def bizStep(rank in Int, bizStep) =
+        journey_step:rank(e, rank) and
+        journey_step:event(e, ev) and
+        zm2:event:bizStep(ev, bizStep)
+        from e, ev
+
+    def event(rank in Int, guid) =
+        journey_step:rank(e, rank) and
+        journey_step:event(e, ev) and
+        zm2:show(ev, guid)
+        from e, ev
+
+    def item(rank in Int, urn) =
+        journey_step:rank(e, rank) and
+        journey_step:item(e, it) and
+        zm2:show(it, urn)
+        from e, it
+
+    def item_class(rank in Int, class) =
+        journey_step:rank(e, rank) and
+        journey_step:item(e, it) and
+        zm2:item:class(it, class)
+        from e, it
+
+    def company(rank in Int, str) =
+        journey_step:rank(e, rank) and
+        journey_step:place(e, pe) and
+        journey_step:device(e, dev) and
+        journey_step:antenna(e, ant) and
+        str = (zm2:place:company_name[pe] <++ "place? %(dev)-%(ant)")
+        from e, pe, dev, ant
+
+    def site_name(rank in Int, str) =
+        journey_step:rank(e, rank) and
+        journey_step:place(e, pe) and
+        journey_step:device(e, dev) and
+        journey_step:antenna(e, ant) and
+        str = (zm2:place:site_name[pe] <++ "place? %(dev)-%(ant)")
+        from e, pe, dev, ant
+
+    def site_detail(rank in Int, str) =
+        journey_step:rank(e, rank) and
+        journey_step:place(e, pe) and
+        journey_step:device(e, dev) and
+        journey_step:antenna(e, ant) and
+        str = (zm2:place:site_detail[pe] <++ "place? %(dev)-%(ant)")
+        from e, pe, dev, ant
+
+    // ***** define the step entity *****/
+
+    // Step entity constructor
+    def step_from_scan(ev in zm2:Event, se in zm2:Sensor, ts in DateTime, e) =
+        sensor_scans(ts, ev, _, se) and
+        ^Step[ev, se, ts](e)
+
+    // all recorded steps
+    def Step(e) = step_from_scan(_, _, _, e)
+
+    // possible noise -- steps with too-short durations before the next step
+    def PossibleNoise(e) =
+        step_from_scan(_, _, _, e) and
+        journey_step:interval(e, mins) and
+        mins < 1.0
+        from mins
+    // items added to Noise if filtering is on
+    def Noise(e) =
+        filter_noise = 1 and
+        PossibleNoise(e)
+
+end
+
+// step in a journey
+module journey_step
+    // id is event, sensor, timestamp
+    def id(e, ev, se, ts) = item_journey:step_from_scan(ev, se, ts, e)
+
+    // this step's order in the journey
+    def rank(e, rank) =
+        item_journey:step_from_scan(ev, se, ts, e) and
+        item_journey:sensor_path(rank, ts, ev, _, se)
+        from ev, se, ts
+
+    // this step's item
+    def item(e, it) =
+        item_journey:step_from_scan(ev, se, ts, e) and
+        item_journey:sensor_scans(ts, ev, it, se)
+        from ev, se, ts
+
+    // this step's timestamp -- when item passed by the sensor
+    def ts(e, ts) =
+        item_journey:step_from_scan(_, _, ts, e)
+
+    // event within which this step was logged
+    def event(e, ev) =
+        item_journey:step_from_scan(ev, _, _, e)
+
+    // this step's sensor -- the scanner the item passed by
+    def sensor(e, se) =
+        item_journey:step_from_scan(_, se, _, e)
+
+    // the number of minutes between this step and the next
+    def interval(e, mins) =
+        rank(e, r) and ts(e, ts1) and
+        rank(e2, r+1) and ts(e2, ts2) and
+        se_util:interval_minutes[ts1, ts2, 3](mins)
+        from e2, r, ts1, ts2
+
+    // the business location of this step's sensor
+    def place(e, pe) =
+        sensor(e, se) and
+        zm2:sensor:dev_ant(se, dev, antstr) and
+        ant = (if num_chars[antstr] > 0 then antstr else "0" end) and
+        pe = (zm2:place:from_device_ant[dev, ant] <++ zm2:place:missing)
+        from se, dev, ant, antstr
+
+    // the device identifier for this step's sensor
+    def device(e, dev) =
+        sensor(e, se) and
+        zm2:sensor:device(se, dev)
+        from se
+
+    // the antenna number for this step's sensor (empty string treated as antenna "0")
+    def antenna(e, ant) =
+        sensor(e, se) and
+        zm2:sensor:antenna(se, antstr) and
+        ant = (if num_chars[antstr] > 0 then antstr else "0" end)
+        from se, antstr
+end
+
+//def output = graphviz[journey_viz]
+
+def output:edge = st1, st2, 
+                    journey_viz:edge_attribute[st1, st2, "label"],
+                    if journey_viz:edge_attribute(st1, st2, "fontcolor", _)
+                    then journey_viz:edge_attribute[st1, st2, "fontcolor"]
+                    else "black" end
+                    from st1, st2 where journey_viz:edge(st1,st2)
+
+def node_type[n] = "place", journey_viz:step_place(n)
+def node_type[n] = "sensor",  journey_viz:journey:sensor_steps(_, n)
+
+def output:node = n, journey_viz:node_attribute[n, "label"], node_type[n] from n where journey_viz:node(n) 
+    

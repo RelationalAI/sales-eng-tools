@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "rai.database",
+    "type": "java.lang.String",
+    "description": "RAI database name"
+  },
+  {
+    "name": "rai.engine",
+    "type": "java.lang.String",
+    "description": "RAI engine name"
+  },
+  {
+    "name": "rai.profile",
+    "type": "java.lang.String",
+    "description": "RAI profile (on of those defined in the config file)"
+  }
+]}

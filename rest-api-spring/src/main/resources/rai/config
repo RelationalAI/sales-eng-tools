@@ -1,0 +1,4 @@
+[default]
+host = azure.relationalai.com
+client_id = CLIENTID
+client_secret = CLIENTSECRET

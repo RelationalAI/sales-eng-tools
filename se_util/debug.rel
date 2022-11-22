@@ -1,0 +1,126 @@
+// *****************************************************************
+// Debugging Tools
+//
+// See tests and examples for usage.
+//
+// INSTALL this source: debug.rel
+// *****************************************************************
+
+// show_varargs -- display a varargs (p...) as comma-separated strings;
+// especially useful for exploring JSON paths
+module debug
+	def show_varargs("()") = true
+	@inline
+	def show_varargs(x, s) = string(x, s)
+	@inline
+	def show_varargs(x1, x2, s) =
+    	s = string_join(",", {(1, string[x1]); (2, string[x2])})
+	@inline
+	def show_varargs(x1, x2, x3, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]); 	(4, string[x4])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]); 	(8, string[x8])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12]); (13, string[x13])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12]); (13, string[x13]); (14, string[x14])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12]); (13, string[x13]); (14, string[x14]); (15, string[x15])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12]); (13, string[x13]); (14, string[x14]); (15, string[x15]);
+        	(16, string[x16])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12]); (13, string[x13]); (14, string[x14]); (15, string[x15]);
+        	(16, string[x16]); (17, string[x17])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12]); (13, string[x13]); (14, string[x14]); (15, string[x15]);
+        	(16, string[x16]); (17, string[x17]); (18, string[x18])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12]); (13, string[x13]); (14, string[x14]); (15, string[x15]);
+        	(16, string[x16]); (17, string[x17]); (18, string[x18]); (19, string[x19])}]
+	@inline
+	def show_varargs(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, s) =
+    	s = string_join[",", {(1, string[x1]); (2, string[x2]); (3, string[x3]) ;
+        	(4, string[x4]); (5, string[x5]); (6, string[x6]); (7, string[x7]);
+        	(8, string[x8]); (9, string[x9]); (10, string[x10]); (11, string[x11]);
+        	(12, string[x12]); (13, string[x13]); (14, string[x14]); (15, string[x15]);
+        	(16, string[x16]); (17, string[x17]); (18, string[x18]); (19, string[x19]);
+            (20, string[x20])}]
+end
+
+// *****************************************************************
+// Debugging Tools -- tests and examples
+//
+// QUERY
+// *****************************************************************
+// test show_varargs (max arity=20)
+// 	def foo:a:b:c:d:e:f:g:h:i:j:k:l:m = 1
+// 	def bar:a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t = 1
+// 	def output(s) = foo(p..., 1) and debug:show_varargs(p..., s) from p...
+// 	def output(s) = bar(p..., 1) and debug:show_varargs(p..., s) from p...

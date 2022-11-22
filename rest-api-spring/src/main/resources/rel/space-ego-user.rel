@@ -1,0 +1,19 @@
+def g:edges = user_interact_graph:edges
+def g:nodes = user_interact_graph:nodes
+
+def source_node = e : user:id(e, ${user_id})
+def max_dist = ${distance}
+
+module neighbors
+    def path = src, trg, 1 from src,trg where g:edges(src,trg) and src = source_node
+    def path = src, trg, {p_d + 1} from src, trg, p_src, p_tgr, p_d where g:edges(src,trg) 
+                                                                    and path(p_src, p_tgr,p_d)
+                                                                    and src = p_tgr
+                                                                    and p_d < max_dist
+end
+
+def output:edge (src, trg) = neighbors:path(src, trg, dist) from dist
+def outnode = n, showGV[n] from n where output:edge(n, _) or output:edge[_,n] 
+def output:node =  e, l, "user" from e, l, id where user:id(e,id) and outnode(e,l)
+def output:node =  e, l, "answer" from e, l, id where answer:id(e,id) and outnode(e,l)
+def output:node =  e, l, "question" from e, l, id where question:id(e,id) and outnode(e,l)

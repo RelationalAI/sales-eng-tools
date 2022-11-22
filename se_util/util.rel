@@ -1,0 +1,192 @@
+// *****************************************************************
+// Sales Engineering Utilities
+//
+// Tools for exploring / manipulating source data.
+//
+// INSTALL this source: util.rel
+// *****************************************************************
+
+@no_diagnostics(:RECURSIVE_INLINE) 
+@outline
+module se_util
+    // Sample the first "limit" rows in relation "D".
+    // Useful for exploring newly loaded CSV data.
+    def head[D, limit] =
+        table[c, row, v: lined_csv[D](c, row, v) and row < limit]
+
+    // Sample the last "limit" rows in relation "D".
+    // Useful for exploring newly loaded CSV data.
+    def tail[D, limit] =
+    table[c, row, v: lined_csv[D](c, row, v) and
+        row > count[x: D(_, x, _)] - limit]
+
+    // Count rows in CSV data file
+    def rowcount[D] =
+        count[row: lined_csv[D](_, row, _)]
+
+    // // Determine the number of entries in a JSON array of objects,
+    // // with special handling for empty arrays.
+    // def json_array_length[A] = count[i: A(:[], i, v...) from v...]
+
+    // def json_array_length[A] = 0, A(:[], missing)
+
+    // // Concatenate two JSON arrays, A1 and A2,
+    // // with special handling for empty arrays.
+    // //
+    // // The union operator (A1 ; A2) would perform a matrix union,
+    // // merging objects at the same array index.
+    // //
+    // // This concatenation function returns a new array with the
+    // // elements of A2 appended to the elements of A1.
+    // def json_array_concat[A1, A2](:[], i, v...) =
+    //     A1(:[], i, v...)
+
+    // def json_array_concat[A1, A2](:[], j, v...) =
+    //     A2(:[], i, v...) and j = json_array_length[A1] + i from i
+
+    // // generate a random int number from the range
+    // // key is a random seed
+    // // lower and upper define inclusive range
+    // def random_int[key, lower in Int, upper in Int] =
+    //     lower + trunc_to_int[(upper-lower+1) * random_threefry_float64[key, 1]]
+
+    // // generate n random int numbers from the range
+    // // key is a random seed
+    // // lower and upper define inclusive range
+    // // n is a number of random numbers to generate
+    // def random_int_n[key, lower in Int, upper in Int, n in Int] =
+    //     random_int[key + seed, lower, upper] for seed in range[1, n, 1]
+
+    // calculate the interval in minutes between two timestamps
+    // ts1 and ts2 are the timestamps
+    // prec is the number of decimal places for the result
+    def interval_minutes[ts1 in DateTime, ts2 in DateTime, prec in Int](interval) =
+        datetime_to_nanoseconds(ts1, nanos) and
+        datetime_to_nanoseconds(ts2, nanos_next) and
+        scale = power[10, prec] and
+        minutes = (nanos_next - nanos) / (60 * 1000000000) and     // convert diff to minutes
+        interval = round[:ROUND_NEAREST, minutes * scale] / scale
+        from nanos, nanos_next, scale, minutes
+
+    // calculate the interval in seconds between two timestamps
+    // ts1 and ts2 are the timestamps
+    // prec is the number of decimal places for the result
+    def interval_seconds[ts1 in DateTime, ts2 in DateTime, prec in Int](interval) =
+        datetime_to_nanoseconds(ts1, nanos) and
+        datetime_to_nanoseconds(ts2, nanos_next) and
+        scale = power[10, prec] and
+        seconds = (nanos_next - nanos) / 1000000000 and     // convert diff to seconds
+        interval = round[:ROUND_NEAREST, seconds * scale] / scale
+        from nanos, nanos_next, scale, seconds
+      
+
+    // helper function for `super_table`
+    def _make_table[R, Col_names](col_name,
+                                row_i,
+                                val) {
+        pivot[Col_names](col_i, col_name) and
+        pivot[sort[R][row_i]](col_i, val)
+        from col_i
+    }
+
+    // print relation in table format
+    // with specified custom column names
+    // for now, the order of columns can't be controlled
+    def super_table[R, Col_names] = table[_make_table[R, Col_names]]
+
+
+    // Date and Time Functions
+    //
+    // extract Date from DateTime
+    def cast_to_date[dt, tz](dd) =
+        daystr = datetime_day[dt, tz] and
+        monthstr = datetime_month[dt, tz] and
+        yearstr = datetime_year[dt, tz] and
+        dd = parse_date["%yearstr-%monthstr-%daystr", "Y-m-d"]
+        from daystr, monthstr, yearstr
+
+    // date intervals overlap
+    def overlap[a_from, a_to, b_from, b_to] = 
+        b_to >= a_from and a_to >= b_from
+
+    // date inside interval
+    def inside[a, b_from, b_to] =
+        overlap[a, a, b_from, b_to]
+
+    // Max (latest) of two dates
+    def max_date[d1, d2] =
+        if d1 > d2 then d1 else d2 end
+
+    // Min (earliest) of two dates
+    def min_date[d1, d2] = 
+        if d1 < d2 then d1 else d2 end
+        
+    // distill ontology 
+    // This function has strong assumptions about knowledge graph G:
+    // 1. defined as a module containing two types of relations: entities and relationships
+    // 2. entities are defined as 2-arity tuples (EntityName: relName, Hash: Entity)
+    // 3. relationships are defined as 3+ arity tuples (RelationshipName: relName, Hash: Entity, Hash: Entity, optional attributes)
+    // Then distill builds an ontology based on entities and relationships above.
+    // Example:
+    //
+    // module my_knowledge_graph
+    //      def Company(e) = company:name(e, _)
+    //      def Site(e) = site:id(e, _)
+    //      def Workorder(e) = workorder:id(e, _)
+    //
+    //      def created_for(w, c) = workorder:company(w, c)
+    //      def serviced_at(w, s) = workorder:site(w, s)
+    // end
+    module distill_ontology[G]
+        def node = string[v] from v where G(v, _)
+        def edge = v1str, v2str: v1str=string[v1] and v2str=string[v2] and
+                                G(_, x, y, zs...) and G(v1, x) and G(v2, y) and
+                                Entity(x) and Entity(y)
+                                from x, y, v1, v2, zs...
+        def edge_attribute = v1str, v2str, "label", estr: 
+                                estr=string[e] and
+                                v1str=string[v1] and v2str=string[v2] and
+                                G(e, x, y, zs...) and
+                                G(v1, x) and G(v2, y)
+                                from x, y, e, v1, v2, zs...
+
+        def node_attribute[vs, "shape"] = shape_map[G][v], vs=string[v] from v where G(v, _)
+        def attribute[:graph, "label"] = concat[(G:graphviz:title <++ "Knowledge Graph"), " Ontology"]
+        def attribute[:graph, "labelloc"] = "t"
+    end
+
+    // Prepare Knowledge Graph for graphviz
+    module knowledge_graph[G]
+        def node(e in Entity) = G(_, e)
+        def edge(n1 in Entity, n2 in Entity) = G(_, n1, n2, xs...) from xs...
+
+        def node_attribute[n, "label"] = G:show[n], node(n)
+
+        // graphviz options
+        def node_attribute[n, "shape"] = shape_map[G][t] from t where G(t, n)
+        
+        def layout = G:graphviz:layout <++ "dot" 
+        def attribute:graph["rankdir"] = if layout="dot" then (G:graphviz:direction <++ "LR") else {} end
+        def attribute[:graph, "label"] = G:graphviz:title <++ "Knowledge Graph"
+        def attribute[:graph, "labelloc"] = "t"
+    end
+
+    // Auxiliary function to populate complete shape map 
+    // based on options
+    def shape_map[G] =
+        default_value[first[arity_filter[G, 2]],
+                    if exists_relname[G, :graphviz] and 
+                        exists_relname[G:graphviz, :entity_shape]
+                    then G:graphviz:entity_shape 
+                    else {} 
+                    end, 
+                    "box"]
+
+
+    // Filter relations by tuple arity
+    def arity_filter[R, n](xs...) = arity({xs...}, n) and R(xs...)
+
+
+    // Test if module relname exists
+    def exists_relname[G, relname] = first[G](relname)
+end
