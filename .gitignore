@@ -1,0 +1,53 @@
+# ignore mac os files
+.DS_Store
+# ignore Jupyter notebook temp directories
+.ipynb_checkpoints
+# ignore IMDB data folder
+/gregory/imdb/data
+.Rproj.user
+.Rhistory
+
+# REST API SPRING
+rest-api-spring/HELP.md
+rest-api-spring/target/
+rest-api-spring/!.mvn/wrapper/maven-wrapper.jar
+rest-api-spring/!**/src/main/**/target/
+rest-api-spring/!**/src/test/**/target/
+
+# Maven wrapper
+**/.mvn/wrapper/maven-wrapper.jar
+
+# WEB UI ANGULAR
+andre/.gitignore
+# Compiled output
+andre/web-ui-angular/dist
+andre/web-ui-angular/tmp
+andre/web-ui-angular/out-tsc
+andre/web-ui-angular/bazel-out
+# Node
+andre/web-ui-angular/node_modules
+andre/web-ui-angular/npm-debug.log
+andre/web-ui-angular/yarn-error.log
+# Visual Studio Code
+andre/web-ui-angular/.vscode/*
+andre/web-ui-angular/!.vscode/settings.json
+andre/web-ui-angular/!.vscode/tasks.json
+andre/web-ui-angular/!.vscode/launch.json
+andre/web-ui-angular/!.vscode/extensions.json
+andre/web-ui-angular/.history/*
+# Miscellaneous
+andre/web-ui-angular/.angular/cache
+andre/web-ui-angular.sass-cache/
+andre/web-ui-angular/connect.lock
+andre/web-ui-angular/coverage
+andre/web-ui-angular/libpeerconnection.log
+andre/web-ui-angulartestem.log
+andre/web-ui-angular/typings
+
+# RelationalAI plugin config
+relationalai-vscode.toml
+
+# environment files for RAI CLI usage
+envcli.sh
+
+
