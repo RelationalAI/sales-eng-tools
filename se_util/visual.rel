@@ -1,0 +1,71 @@
+// *****************************************************************
+// Sales Engineering Visualizations
+//
+// Tools for creating graphviz visuals.
+//
+// INSTALL this source: visual.rel
+// *****************************************************************
+
+@outline
+module se_visual
+    // distill ontology 
+    // This function has strong assumptions about knowledge graph G:
+    // 1. defined as a module containing two types of relations: entities and relationships
+    // 2. entities are defined as 2-arity tuples (EntityName: relName, Hash: Entity)
+    // 3. relationships are defined as 3+ arity tuples (RelationshipName: relName, Hash: Entity, Hash: Entity, optional attributes)
+    // Then distill builds an ontology based on entities and relationships above.
+    // Example:
+    //
+    // module my_knowledge_graph
+    //      def Company(e) = company:name(e, _)
+    //      def Site(e) = site:id(e, _)
+    //      def Workorder(e) = workorder:id(e, _)
+    //
+    //      def created_for(w, c) = workorder:company(w, c)
+    //      def serviced_at(w, s) = workorder:site(w, s)
+    // end
+    module distill_ontology[G]
+        def node = string[v] from v where G(v, _)
+        def edge = v1str, v2str: v1str=string[v1] and v2str=string[v2] and
+                                G(_, x, y, zs...) and G(v1, x) and G(v2, y) and
+                                Entity(x) and Entity(y)
+                                from x, y, v1, v2, zs...
+        def edge_attribute = v1str, v2str, "label", estr: 
+                                estr=string[e] and
+                                v1str=string[v1] and v2str=string[v2] and
+                                G(e, x, y, zs...) and
+                                G(v1, x) and G(v2, y)
+                                from x, y, e, v1, v2, zs...
+
+        def node_attribute[vs, "shape"] = shape_map[G][v], vs=string[v] from v where G(v, _)
+        def attribute[:graph, "label"] = concat[(G:graphviz:title <++ "Knowledge Graph"), " Ontology"]
+        def attribute[:graph, "labelloc"] = "t"
+    end
+
+    // Prepare Knowledge Graph for graphviz
+    module knowledge_graph[G]
+        def node(e in Entity) = G(_, e)
+        def edge(n1 in Entity, n2 in Entity) = G(_, n1, n2, xs...) from xs...
+
+        def node_attribute[n, "label"] = G:show[n], node(n)
+
+        // graphviz options
+        def node_attribute[n, "shape"] = shape_map[G][t] from t where G(t, n)
+        
+        def layout = G:graphviz:layout <++ "dot" 
+        def attribute:graph["rankdir"] = if layout="dot" then (G:graphviz:direction <++ "LR") else {} end
+        def attribute[:graph, "label"] = G:graphviz:title <++ "Knowledge Graph"
+        def attribute[:graph, "labelloc"] = "t"
+    end
+
+    // Auxiliary function to populate complete shape map 
+    // based on options
+    def shape_map[G] =
+        default_value[first[se_util:arity_filter[G, 2]],
+                    if se_util:exists_relname[G, :graphviz] and 
+                        se_util:exists_relname[G:graphviz, :entity_shape]
+                    then G:graphviz:entity_shape 
+                    else {} 
+                    end, 
+                    "box"]
+end
