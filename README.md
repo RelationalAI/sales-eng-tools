@@ -1,4 +1,9 @@
-# Common tools for Sales Engineering
+# Common tools from Sales Engineering
+
+This is a public repo to contain libraries, utilities, and other resources created by Sales Engineering and others to support and ehance ongoing and future RAI projects. These resources are not client specific, can be freely shared, distributed and updated in the spirit of OOS. 
+
+Free License is pending.
+
 ## Command-line tools and environment
 Bash, Python, Julia, etc., tools for command line usage.
 
@@ -40,8 +45,15 @@ Bash, Python, Julia, etc., tools for command line usage.
     The most recent output directory is used by default,
     but a different name can be specified on the command line.
 
-## Rel utilities
-TBD...
+## SE Rel library
+
+Folder [se_lib](/se_lib) contains Rel models:
+
+  * [util.rel](/se_lib/util.rel): collection of useful general purpose functions supplementing standard library functions
+  * [visual.rel](/se_lib/visual.rel): graphviz-based visualization functions for knowledge graphs, ontology, etc.
+  * [debug.rel](/se_lib/debug.rel): TBD
+
+
 
 ## Spring REST API
 TBD...
