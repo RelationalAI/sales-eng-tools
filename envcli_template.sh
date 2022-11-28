@@ -40,7 +40,7 @@ fi
 RAI_BENCH_DIR=your-directory
 
 # RAI Sales Engineering utilities
-RAI_SE_UTIL_DIR=~/....../common
+RAI_SE_UTIL_DIR=~/....../sales-eng-tools
 
 # Diffbot token (personal token for user)
 DIFFBOT_TOKEN=......
