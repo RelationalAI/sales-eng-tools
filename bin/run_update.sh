@@ -1,4 +1,4 @@
-# run specified query file(s) against the specified DB
+# run specified update file(s) against the specified DB
 
 source ./envcli.sh
 pro=$RAI_CLI_PROFILE
@@ -20,6 +20,6 @@ list=$@
 set -e
 
 for rel in $list; do
-    echo "running read-only query '$rel' against database '$db'"
-    rai --profile $pro --engine $eng exec $db --readonly --file $rel
+    echo "running read-write query '$rel' against database '$db'"
+    rai --profile $pro --engine $eng exec $db --file $rel
 done
