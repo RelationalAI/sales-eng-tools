@@ -6,7 +6,6 @@
 // INSTALL this source: visual.rel
 // *****************************************************************
 
-@outline
 module se_visual
     // distill ontology 
     // This function has strong assumptions about knowledge graph G:
@@ -24,6 +23,7 @@ module se_visual
     //      def created_for(w, c) = workorder:company(w, c)
     //      def serviced_at(w, s) = workorder:site(w, s)
     // end
+    @outline
     module distill_ontology[G]
         def node = string[v] from v where G(v, _)
         def edge = v1str, v2str: v1str=string[v1] and v2str=string[v2] and
@@ -43,6 +43,7 @@ module se_visual
     end
 
     // Prepare Knowledge Graph for graphviz
+    @outline
     module knowledge_graph[G]
         def node(e in Entity) = G(_, e)
         def edge(n1 in Entity, n2 in Entity) = G(_, n1, n2, xs...) from xs...
@@ -60,6 +61,7 @@ module se_visual
 
     // Auxiliary function to populate complete shape map 
     // based on options
+    @inline
     def shape_map[G] =
         default_value[first[se_util:arity_filter[G, 2]],
                     if se_util:exists_relname[G, :graphviz] and 

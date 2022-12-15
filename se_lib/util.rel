@@ -7,20 +7,22 @@
 // *****************************************************************
 
 @no_diagnostics(:RECURSIVE_INLINE) 
-@outline
 module se_util
     // Sample the first "limit" rows in relation "D".
     // Useful for exploring newly loaded CSV data.
+    @outline
     def head[D, limit] =
         table[c, row, v: lined_csv[D](c, row, v) and row < limit]
 
     // Sample the last "limit" rows in relation "D".
     // Useful for exploring newly loaded CSV data.
+    @outline
     def tail[D, limit] =
     table[c, row, v: lined_csv[D](c, row, v) and
         row > count[x: D(_, x, _)] - limit]
 
     // Count rows in CSV data file
+    @outline
     def rowcount[D] =
         count[row: lined_csv[D](_, row, _)]
 
@@ -60,6 +62,7 @@ module se_util
     // calculate the interval in minutes between two timestamps
     // ts1 and ts2 are the timestamps
     // prec is the number of decimal places for the result
+    @inline
     def interval_minutes[ts1 in DateTime, ts2 in DateTime, prec in Int](interval) =
         datetime_to_nanoseconds(ts1, nanos) and
         datetime_to_nanoseconds(ts2, nanos_next) and
@@ -71,7 +74,8 @@ module se_util
     // calculate the interval in seconds between two timestamps
     // ts1 and ts2 are the timestamps
     // prec is the number of decimal places for the result
-    def interval_seconds[ts1 in DateTime, ts2 in DateTime, prec in Int](interval) =
+    @inline
+    def interval_seconds[ts1, ts2, prec in Int](interval) =
         datetime_to_nanoseconds(ts1, nanos) and
         datetime_to_nanoseconds(ts2, nanos_next) and
         scale = power[10, prec] and
@@ -81,6 +85,7 @@ module se_util
       
 
     // helper function for `super_table`
+    @outline
     def _make_table[R, Col_names](col_name,
                                 row_i,
                                 val) {
@@ -92,12 +97,14 @@ module se_util
     // print relation in table format
     // with specified custom column names
     // for now, the order of columns can't be controlled
+    @outline
     def super_table[R, Col_names] = table[_make_table[R, Col_names]]
 
 
     // Date and Time Functions
     //
     // extract Date from DateTime
+    @inline
     def cast_to_date[dt, tz](dd) =
         daystr = datetime_day[dt, tz] and
         monthstr = datetime_month[dt, tz] and
@@ -106,26 +113,32 @@ module se_util
         from daystr, monthstr, yearstr
 
     // date intervals overlap
+    @inline
     def overlap[a_from, a_to, b_from, b_to] = 
         b_to >= a_from and a_to >= b_from
 
     // date inside interval
+    @inline
     def inside[a, b_from, b_to] =
         overlap[a, a, b_from, b_to]
 
     // Max (latest) of two dates
+    @inline
     def max_date[d1, d2] =
         if d1 > d2 then d1 else d2 end
 
     // Min (earliest) of two dates
+    @inline
     def min_date[d1, d2] = 
         if d1 < d2 then d1 else d2 end
         
 
     // Filter relations by tuple arity
+    @outline
     def arity_filter[R, n](xs...) = arity({xs...}, n) and R(xs...)
 
 
     // Test if module relname exists
+    @outline
     def exists_relname[G, relname] = first[G](relname)
 end
