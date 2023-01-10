@@ -1,4 +1,7 @@
 // *****************************************************************
+// !!! DEPRECATED !!!
+// !!! use kg.rel instead !!!
+//
 // Sales Engineering Visualizations
 //
 // Tools for creating graphviz visuals.
