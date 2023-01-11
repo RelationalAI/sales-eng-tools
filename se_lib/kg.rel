@@ -62,12 +62,14 @@ module se_kg
     // Ego graph will contain seeds entities plus all entities that are distanced up to max_degree
     // jumps from them
     // add seed node(s) - degree 0
-    @outline @ondemand
-    def make_ego_kg[KG, seeds in Entity, max_degree in Int](ename, e in Entity, 0) = 
+    @outline // @ondemand
+    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+            (ename, e in Entity, 0) = 
                                     KG(ename, e) and e=seeds
     // recursively add nodes - degree + 1 
-    @outline @ondemand
-    def make_ego_kg[KG, seeds in Entity, max_degree in Int](ename, e in Entity, deg) = 
+    @outline // @ondemand
+    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+            (ename, e in Entity, deg) = 
                                     KG(ename, e) and 
                                     (KG(_, le, e) or KG(_, e, le)) and 
                                     make_ego_kg[KG, seeds, max_degree](_, le, pdeg) and 
@@ -75,25 +77,27 @@ module se_kg
                                     from le in Entity, pdeg in Int 
                                     where pdeg <= max_degree
     // add relations
-    @outline @ondemand
-    def make_ego_kg[KG, seeds in Entity, max_degree in Int](rel, e1 in Entity, e2 in Entity) = 
+    @outline // @ondemand
+    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+            (rel, e1 in Entity, e2 in Entity) = 
                                     KG(rel, e1, e2) and 
                                     make_ego_kg[KG, seeds, max_degree](_, e1, _) and 
                                     make_ego_kg[KG, seeds, max_degree](_, e2, _)
-
-    @outline
-    @ondemand
-    module make_ego_kg2[KG, seeds in Entity, max_degree in Int]
+    
+    // alternative version of make_ego_kg
+    // must remove top :graph layer after getting results
+    @outline //@ondemand
+    module make_ego_kg2[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
         def graph(ename, e in Entity, 0) = KG(ename, e) and e=seeds
         def graph(ename, e in Entity, deg) = KG(ename, e) and 
                                     (KG(_, le, e) or KG(_, e, le)) and 
-                                    make_ego_kg2(:graph, _, le, pdeg) and 
+                                    make_ego_kg2[KG, seeds, max_degree](:graph, _, le, pdeg) and 
                                     deg=pdeg+1 
                                     from le in Entity, pdeg in Int 
                                     where pdeg <= max_degree
         def graph(rel, e1 in Entity, e2 in Entity) = KG(rel, e1, e2) and 
-                                    make_ego_kg2(:graph, _, e1, _) and 
-                                    make_ego_kg2(:graph, _, e2, _)
+                                    make_ego_kg2[KG, seeds, max_degree](:graph, _, e1, _) and 
+                                    make_ego_kg2[KG, seeds, max_degree](:graph, _, e2, _)
     end
     
 
