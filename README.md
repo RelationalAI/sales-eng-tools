@@ -53,7 +53,40 @@ Folder [se_lib](/se_lib) contains Rel models:
   * [visual.rel](/se_lib/visual.rel): graphviz-based visualization functions for knowledge graphs, ontology, etc.
   * [debug.rel](/se_lib/debug.rel): TBD
 
+### Options (Configuration) Module Format
 
+Example of options module (`OPTS`) passed to knowledge graph functions:
+```
+module kg_options
+  module graphviz
+    def title = "Knowledge Graph" // Graph Title
+    def layout = "dot"
+    def direction = "TD"
+    def entity_shape = {(:Customer, "oval");
+                        (:Bank, "box");}
+    def label_edges = boolean_false
+  end
+end
+```
 
+Knowldge graph visualization functions take 
 ## Spring REST API
 TBD...
+
+### Main and Big Ideas
+
+#### Resarch Upstream that results in Product Downstream - no exceptions and identified and planed from the beginning:
+
+  * Teams like DS team should be "research"-focused upstrem and "product"-bound downstream. It means that they start with and do research/dev that should always result in identified and defined products or product enhancements.
+
+
+
+
+
+
+
+
+
+Back to Shesterkin. He apparently "starred" in the exhibition game where #WarCrimes Putin scored 8 goals against him (the game took place in May 2019 before full scale #UkraineRussiaWar):
+https://twitter.com/eddie_p_412/status/1523851402103111680?s=20&t=c6OjwKxXmgbTw9SRU3eH1w
+3/4

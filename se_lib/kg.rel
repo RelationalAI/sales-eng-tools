@@ -111,6 +111,12 @@ module se_kg
 
         // graphviz options
         def node_attribute[n, "shape"] = shape_map[KG, OPTS][t] from t where KG(t, n)
+
+        def edge_attribute = x, y, "label", estr: 
+                                estr=string[e] and
+                                KG(e, x, y, zs...) and
+                                OPTS:graphviz:label_edges(boolean_true)
+                                from e, zs...
         
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
