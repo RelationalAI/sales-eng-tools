@@ -21,6 +21,16 @@ module se_kg
             DATA(entity_rel, r, e1, e2, xs...) 
             from entity_rel
 
+    // graph signature to compare graph topologies -
+    // use equal[graph1, graph2] for exact match
+    // @outline
+    // module get_kg_signature[KG] 
+    //     def node_count = 
+    //     def edge_count = 
+    //     def avg_degree = 
+    //     def degree_stats = 
+    // end
+
     // distill ontology 
     // This function expects 2 parameters
     // KG - knowledge graph defined as a module consisting of two types of relations: 
@@ -59,46 +69,63 @@ module se_kg
 
 
     // Make ego-graph of KG
-    // Ego graph will contain seeds entities plus all entities that are distanced up to max_degree
+    // Ego graph begins seeds entities plus all entities that are distanced up to max_degree
     // jumps from them
     // add seed node(s) - degree 0
     @outline // @ondemand
-    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
-            (ename, e in Entity, 0) = 
+    def _make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+            (ename in RelName, e in Entity, 0) = 
                                     KG(ename, e) and e=seeds
     // recursively add nodes - degree + 1 
     @outline // @ondemand
-    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
-            (ename, e in Entity, deg) = 
+    def _make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+            (ename in RelName, e in Entity, deg in Int) = 
                                     KG(ename, e) and 
                                     (KG(_, le, e) or KG(_, e, le)) and 
-                                    make_ego_kg[KG, seeds, max_degree](_, le, pdeg) and 
+                                    _make_ego_kg[KG, seeds, max_degree](_, le, pdeg) and 
                                     deg=pdeg+1 
                                     from le in Entity, pdeg in Int 
-                                    where pdeg < max_degree
+                                    where pdeg <= max_degree
     // add relations
     @outline // @ondemand
-    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
-            (rel, e1 in Entity, e2 in Entity) = 
-                                    KG(rel, e1, e2) and 
-                                    make_ego_kg[KG, seeds, max_degree](_, e1, _) and 
-                                    make_ego_kg[KG, seeds, max_degree](_, e2, _)
+    def _make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+            (rel in RelName, e1 in Entity, e2 in Entity, xs...) = 
+                                    KG(rel, e1, e2, xs...) and 
+                                    _make_ego_kg[KG, seeds, max_degree](_, e1, _) and 
+                                    _make_ego_kg[KG, seeds, max_degree](_, e2, _)
+
+    // copy KG and remove distances 
+    @outline
+    def remove_distance[KG_with_distance](ename in RelName, e in Entity) = KG_with_distance(ename, e, deg) from deg in Int
+    @outline
+    def remove_distance[KG_with_distance](rel in RelName, e1 in Entity, e2 in Entity, xs...) = KG_with_distance(rel, e1, e2, xs...)
+
+
+    // Make ego-graph of KG
+    @outline
+    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}] =
+                                    remove_distance[_make_ego_kg[KG, seeds, max_degree]]
+
     
     // alternative version of make_ego_kg
     // must remove top :graph layer after getting results
     @outline //@ondemand
-    module make_ego_kg2[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
-        def graph(ename, e in Entity, 0) = KG(ename, e) and e=seeds
-        def graph(ename, e in Entity, deg) = KG(ename, e) and 
+    module _make_ego_kg2[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+        def graph(ename in RelName, e in Entity, 0) = KG(ename, e) and e=seeds
+        def graph(ename in RelName, e in Entity, deg in Int) = KG(ename, e) and 
                                     (KG(_, le, e) or KG(_, e, le)) and 
-                                    make_ego_kg2[KG, seeds, max_degree](:graph, _, le, pdeg) and 
+                                    _make_ego_kg2[KG, seeds, max_degree](:graph, _, le, pdeg) and 
                                     deg=pdeg+1 
                                     from le in Entity, pdeg in Int 
                                     where pdeg <= max_degree
-        def graph(rel, e1 in Entity, e2 in Entity) = KG(rel, e1, e2) and 
-                                    make_ego_kg2[KG, seeds, max_degree](:graph, _, e1, _) and 
-                                    make_ego_kg2[KG, seeds, max_degree](:graph, _, e2, _)
+        def graph(rel in RelName, e1 in Entity, e2 in Entity) = KG(rel, e1, e2) and 
+                                    _make_ego_kg2[KG, seeds, max_degree](:graph, _, e1, _) and 
+                                    _make_ego_kg2[KG, seeds, max_degree](:graph, _, e2, _)
     end
+
+    @outline 
+    def make_ego_kg2[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}] = 
+                                   _make_ego_kg2[KG, seeds, max_degree][_]
     
 
     // Prepare Knowledge Graph for graphviz
