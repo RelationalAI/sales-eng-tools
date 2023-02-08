@@ -12,7 +12,7 @@ module se_kg
     // This function expects data model DATA and config META
     // to create corresponding KG
     @outline
-    def make_knowledge_graph[DATA, META][entity_name in RelName](e in Entity) = 
+    def make_knowledge_graph[DATA, META](entity_name in RelName, e in Entity) = 
             DATA(entity_rel, r, e, _) and
             META(entity_rel, :entity_name, entity_name)
             from r in RelName, entity_rel
