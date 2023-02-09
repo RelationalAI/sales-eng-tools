@@ -62,6 +62,8 @@ module se_kg
                                 KG(v2, y)
                                 from x, y, e, v1, v2, zs...
 
+        def layout = OPTS:graphviz:layout <++ "dot" 
+        def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
         def node_attribute[vs, "shape"] = shape_map[KG, OPTS][v], vs=string[v] from v where KG(v, _)
         def attribute[:graph, "label"] = "%(OPTS:graphviz:title <++ "Knowledge Graph") Ontology"
         def attribute[:graph, "labelloc"] = "t"
