@@ -28,7 +28,8 @@ module se_kg
     //     def node_count = 
     //     def edge_count = 
     //     def avg_degree = 
-    //     def degree_stats = 
+    //     def node_degrees = 
+    //     def entities = KG
     // end
 
     // distill ontology 
@@ -87,7 +88,7 @@ module se_kg
                                     _make_ego_kg[KG, seeds, max_degree](_, le, pdeg) and 
                                     deg=pdeg+1 
                                     from le in Entity, pdeg in Int 
-                                    where pdeg <= max_degree
+                                    where pdeg < max_degree
     // add relations
     @outline // @ondemand
     def _make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
@@ -97,14 +98,14 @@ module se_kg
                                     _make_ego_kg[KG, seeds, max_degree](_, e2, _)
 
     // copy KG and remove distances 
-    @outline
+    @inline
     def remove_distance[KG_with_distance](ename in RelName, e in Entity) = KG_with_distance(ename, e, deg) from deg in Int
-    @outline
+    @inline
     def remove_distance[KG_with_distance](rel in RelName, e1 in Entity, e2 in Entity, xs...) = KG_with_distance(rel, e1, e2, xs...)
 
 
     // Make ego-graph of KG
-    @outline
+    @inline
     def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}] =
                                     remove_distance[_make_ego_kg[KG, seeds, max_degree]]
 
@@ -119,7 +120,7 @@ module se_kg
                                     _make_ego_kg2[KG, seeds, max_degree](:graph, _, le, pdeg) and 
                                     deg=pdeg+1 
                                     from le in Entity, pdeg in Int 
-                                    where pdeg <= max_degree
+                                    where pdeg < max_degree
         def graph(rel in RelName, e1 in Entity, e2 in Entity) = KG(rel, e1, e2) and 
                                     _make_ego_kg2[KG, seeds, max_degree](:graph, _, e1, _) and 
                                     _make_ego_kg2[KG, seeds, max_degree](:graph, _, e2, _)
