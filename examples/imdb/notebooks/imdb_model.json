@@ -1,0 +1,159 @@
+{
+  "cells": [
+    {
+      "id": "d682dacd-7992-4b8d-9c54-50924f653bf9",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "# IMDB Dataset\n\n## Pre-requisites\n\n1. Clone github repository https://github.com/RelationalAI/sales-eng-tools: `git clone https://github.com/RelationalAI/sales-eng-tools.git`\n2. In `Models` choose `Import Folder` and select folder `se_lib` inside `sales-eng-tools` repo  \n3. Confirm that now `Models` contains folder `se_lib`\n\n4. ## S3 Data Files\n\nData files for IMDB dataset are stored in S3 bucket `s3://psilabs-public-files/imdb/`.\n\nThere are alternative versions of IMDB dataset available depending on the year and number of votes of titles.\nFor example a version with CSV file names that end in `_1953_votes_30` contains titles created in 1953 with at \nleast 30 votes received. \n\nUse `suffix` to select desired version.",
+      "type": "markdown"
+    },
+    {
+      "id": "4346455c-2adf-4f33-b19f-0221ac67b543",
+      "inputs": [
+      ],
+      "name": "imdb_s3_config",
+      "source": "def path = \"s3://psilabs-public-files/imdb/\"\ndef suffix = \"_1953_votes_30.csv\"",
+      "type": "install"
+    },
+    {
+      "id": "d00fbe08-423f-4158-92d6-b94ff62604d2",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "def delete[:title_csv] = title_csv\ndef delete[:genre_csv] = genre_csv\ndef delete[:name_csv] = name_csv\ndef delete[:principal_csv] = principal_csv",
+      "type": "update"
+    },
+    {
+      "id": "06b2e3fc-4aad-42be-96e8-af76f3dc164c",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "// Title CSV\ndef title_config:path = concat[concat[path, \"title_basics\"], suffix]\ndef insert[:title_csv] = lined_csv[load_csv[title_config]]\n\n// Title Genres CSV\ndef genre_config:path = concat[concat[path, \"title_genres\"], suffix]\ndef insert[:genre_csv] = lined_csv[load_csv[genre_config]]\n\n// Names CSV\ndef name_config:path = concat[concat[path, \"name_basics\"], suffix]\ndef insert[:name_csv] = lined_csv[load_csv[name_config]]\n\n// Principals CSV\ndef principal_config:path = concat[concat[path, \"principals\"], suffix]\ndef insert[:principal_csv] = lined_csv[load_csv[principal_config]]\n\n// Name Professions CSV\ndef name_prof_config:path = \"%(path)name_professions%(suffix)\"\ndef insert[:name_prof_csv] = lined_csv[load_csv[name_prof_config]]\n\n",
+      "type": "update"
+    },
+    {
+      "id": "9063a838-6856-4f9b-aa22-5afa145abf72",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "## CSV Data Files\n\nAll CSV Files are loaded \"as-is\" with all columns containing genereic data as strings. For example, observe `title_csv` relation:",
+      "type": "markdown"
+    },
+    {
+      "id": "fb0956b7-e19c-4b58-93c5-4f49725cf58a",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "//def output = principal_csv //table[principal_csv]\n\ndef row = row: principal_csv(attr, row, val) and\n            ((attr=\"nconst\" and val=\"nm0634402\") or\n             (attr=\"tconst\" and val=\"tt8758742\"))\n          from attr, val  \ndef output = row",
+      "type": "query"
+    },
+    {
+      "id": "85ff34a7-f0c9-4c68-9518-333fee6c295e",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "def output = table[name_prof_csv]",
+      "type": "query"
+    },
+    {
+      "id": "aeaa6209-5caf-4bb7-bf8e-bb4969ee645f",
+      "inputs": [
+      ],
+      "name": "imdb_entity_types",
+      "source": "entity type Title = String\nentity type Name = String\n\nmodule create_entity\n    def Title[x] = ^Title[x]\n    def Name[x] = ^Name[x]\nend",
+      "type": "install"
+    },
+    {
+      "id": "92c41830-3b63-4452-9dec-246ab81cbf8a",
+      "inputs": [
+      ],
+      "name": "imdb_meta_module",
+      "source": "module imdb_meta\n\n    module title\n        def entity_name = :Title\n        def key = :tconst\n        def simple_string_attr = {\n            :primaryTitle;\n            :titleType;\n        }\n        def int_attr = {\n            :startYear; :endYear; :numVotes; :runtimeMinutes;\n        }\n        def float_attr = {\n            :averageRating\n        }\n        def attr_alias_map = {\n            (:tconst, :id);\n        }\n    end\n\n    module name\n        def entity_name = :Name\n        def key = :nconst\n        def simple_string_attr = {\n            :primaryName;\n            :primaryProfession;\n        }\n        def int_attr = {\n            :birthYear; :deathYear;\n        }\n        def attr_alias_map = {\n            (:nconst, :id);\n        }\n    end\n\nend",
+      "type": "install"
+    },
+    {
+      "id": "0dfe482f-639d-4bb2-a34c-106039e860f9",
+      "inputs": [
+      ],
+      "name": "imdb_data_module",
+      "source": "with se_csv use parse_attributes\n\nmodule imdb_data\n\n    // Title entity data\n    def title_from_id(id, e) = create_entity:Title[id](e) and \n                                title_csv(imdb_meta:title:key, _, id)\n    module title\n        def id(e, id) = title_from_id(id, e)\n    end\n    def title(attr, e, val) = parse_attributes[title:id, title_csv,\n                                                imdb_meta:title:key, \n                                                imdb_meta:title](attr, e, val)\n    def title(:genre, e, val) = genre_csv(:genre, row, val) and\n                                genre_csv(imdb_meta:title:key, row, titleid) and\n                                title(:id, e, titleid)\n                                from row, titleid\n\n    // Name entity data\n    def name_from_id(id, e) = create_entity:Name[id](e) and\n                                name_csv(imdb_meta:name:key, _, id)\n    module name\n        def id(e, id) = name_from_id(id, e)\n    end\n    def name(attr, e, val) = parse_attributes[name:id, name_csv,\n                                                imdb_meta:name:key,\n                                                imdb_meta:name](attr, e, val)\n    def name(:principal_in, ne, te) =   principal_csv(imdb_meta:name:key, row, nameid) and\n                                        principal_csv(imdb_meta:title:key, row, titleid) and\n                                        name(:id, ne, nameid) and\n                                        title(:id, te, titleid) \n                                        from row, nameid, titleid\n    def name(:principal_in, ne, te, :category, category) =   \n                                        principal_csv(imdb_meta:name:key, row, nameid) and\n                                        principal_csv(imdb_meta:title:key, row, titleid) and\n                                        principal_csv(:category, row, category) and\n                                        name(:id, ne, nameid) and\n                                        title(:id, te, titleid) \n                                        from row, nameid, titleid\nend",
+      "type": "install"
+    },
+    {
+      "id": "60990e34-9988-432e-97f8-9d4cc01c6f66",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "## IMDB Knowledge Graph\n\n### Viz Options",
+      "type": "markdown"
+    },
+    {
+      "id": "0f42bcd5-f20b-4adb-b17b-c44bd693cba8",
+      "inputs": [
+      ],
+      "name": "imdb_options_module",
+      "source": "// KG and GraphViz options\nmodule imdb_opts \n    module graphviz\n        def layout = \"fdp\" \n        def direction = \"LR\"\n        def title = \"IMDB Knowledge Graph\"\n        def entity_shape = {(:Name, \"oval\");\n                            (:Title, \"box\")}\n    end\nend\n\nmodule imdb_ont_opts\n    module graphviz\n        def layout = \"dot\"\n        def title = \"IMDB KG\"\n        def direction = \"LR\"\n        def entity_shape = {(:Name, \"oval\");\n                            (:Title, \"box\")}\n    end\nend",
+      "type": "install"
+    },
+    {
+      "id": "64d9f472-3321-46d3-a426-6d4e4fa673ad",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "### Create IMDB Knowledge Graph",
+      "type": "markdown"
+    },
+    {
+      "id": "9b5d23ad-97e6-4408-b846-543771880810",
+      "inputs": [
+      ],
+      "name": "imdb_kg",
+      "source": "with imdb_data use name, title\nwith se_kg use make_knowledge_graph\n\ndef imdb_kg = make_knowledge_graph[imdb_data, imdb_meta]\n\ndef imdb_kg:show[e in Entity] = \"%(name:primaryName[e]) (%(name:birthYear[e]))\";\n                                \"%(title:primaryTitle[e]) (%(title:startYear[e]))\"",
+      "type": "install"
+    },
+    {
+      "id": "d27a17cc-53ac-4545-aa7a-9d2231146b57",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "def output = imdb_kg",
+      "type": "query"
+    },
+    {
+      "id": "38aa2e68-d78c-40bd-beee-b5e083b2a32f",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "### IMDB KG Ontology",
+      "type": "markdown"
+    },
+    {
+      "id": "50139a1b-ef57-47c3-a487-c0b21c49c20e",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "with se_kg use distill_kg_ontology\n\nmodule imdb_ont_opts\n    module graphviz\n        def layout = \"dot\"\n        def title = \"IMDB KG\"\n        def direction = \"LR\"\n        def entity_shape = {(:Name, \"oval\");\n                            (:Title, \"box\")}\n    end\nend\ndef ont = distill_kg_ontology[imdb_kg, imdb_ont_opts]\ndef output = graphviz[ont]",
+      "type": "query"
+    },
+    {
+      "id": "aaf55322-066d-4a2e-a17f-253b7ca82a90",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "### Title Roman Holiday Ego Graph",
+      "type": "markdown"
+    },
+    {
+      "id": "e22523f1-718c-4027-be24-c753cad14139",
+      "inputs": [
+      ],
+      "name": "",
+      "source": "with imdb_data use title, name\n\n// seed node(s)\ndef roman_holiday_title(t) = title:primaryTitle(t, \"Roman Holiday\")\n// def john_dighton(n) = name:primaryName(n, \"John Dighton\")\ndef max_degree = 3\n\ndef skg = se_kg:make_ego_kg[imdb_kg, roman_holiday_title, max_degree]\n\n// def output = skg\n// reduce to a graph by removing distances\n//def skg = skg2:graph\n// def go(ename, e) = skg(ename, e, deg) from deg in Int\n// def go(rel, e1 in Entity, e2 in Entity) = skg(rel, e1, e2)\ndef skg:show(e in Entity, s) = imdb_kg:show(e, s) and skg(_, e)\n\nwith se_kg use make_graphviz_object\n\ndef output = graphviz[make_graphviz_object[skg, imdb_opts]]\n//def output = skg:show",
+      "type": "query"
+    }
+  ],
+  "metadata": {
+    "notebookFormatVersion": "0.0.1"
+  }
+}
