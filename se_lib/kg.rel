@@ -21,6 +21,15 @@ module se_kg
             DATA(entity_rel, r, e1, e2, xs...) 
             from entity_rel
 
+    @inline
+    module get_kg_signature[KG]
+        def _nodes = count[r in RelName, e in Entity: imdb_kg_ext(r, e)]
+        def _edges = count[r in RelName, e1 in Entity, e2 in Entity: imdb_kg_ext(r, e1, e2, xs...) and r!=:show from xs...]
+        def __entity_counts[r in RelName] = count[e: imdb_kg_ext(r, e)]
+        def __relation_counts[r in RelName] = count[e1, e2: imdb_kg_ext(r, e1, e2, xs...) and r!=:show from xs...]
+        def ___shows = count[xs...: imdb_kg_ext(:show, xs...)]
+    end
+
     // graph signature to compare graph topologies -
     // use equal[graph1, graph2] for exact match
     // @outline
