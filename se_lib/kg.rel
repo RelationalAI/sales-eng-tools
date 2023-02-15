@@ -93,7 +93,7 @@ module se_kg
     def _make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
             (ename in RelName, e in Entity, deg in Int) = 
                                     KG(ename, e) and 
-                                    (KG(_, le, e) or KG(_, e, le)) and 
+                                    (KG(_, le, e, xs...) or KG(_, e, le, xs...)) and 
                                     _make_ego_kg[KG, seeds, max_degree](_, le, pdeg) and 
                                     deg=pdeg+1 
                                     from le in Entity, pdeg in Int 
