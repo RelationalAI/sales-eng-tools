@@ -96,7 +96,7 @@ module se_kg
                                     (KG(_, le, e, xs...) or KG(_, e, le, xs...)) and 
                                     _make_ego_kg[KG, seeds, max_degree](_, le, pdeg) and 
                                     deg=pdeg+1 
-                                    from le in Entity, pdeg in Int 
+                                    from le in Entity, pdeg in Int, xs...
                                     where pdeg < max_degree
     // add relations
     @outline // @ondemand
