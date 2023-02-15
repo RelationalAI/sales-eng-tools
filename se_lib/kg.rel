@@ -115,7 +115,7 @@ module se_kg
 
     // Make ego-graph of KG
     @inline
-    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}] =
+    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}] = 
                                     remove_distance[_make_ego_kg[KG, seeds, max_degree]]
 
     
@@ -125,7 +125,7 @@ module se_kg
         def node(e in Entity) = KG(r, e) from r in RelName
         def edge(n1 in Entity, n2 in Entity) = KG(r, n1, n2, xs...) from r in RelName, xs...
 
-        def node_attribute[n, "label"] = KG:show[n], node(n)
+        def node_attribute[n, "label"] = OPTS:ui:show[n], node(n)
 
         // graphviz options
         def node_attribute[n, "shape"] = shape_map[KG, OPTS][t] from t where KG(t, n)
