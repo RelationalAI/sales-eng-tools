@@ -17,9 +17,9 @@ module se_kg
             META(entity_rel, :entity_name, entity_name)
             from entity_attr in RelName, entity_rel
     @outline
-    def make_knowledge_graph[DATA, META](r in RelName, e1 in Entity, e2 in Entity, xs...) = 
+    def make_knowledge_graph[DATA, META](r in RelName, e1 in Entity, e2 in Entity) = 
             DATA(entity_rel, r, e1, e2, xs...) 
-            from entity_rel
+            from entity_rel in RelName, xs...
 
     @inline
     module get_kg_signature[KG]
@@ -61,16 +61,16 @@ module se_kg
     module distill_kg_ontology[KG, OPTS]
         def node = string[v] from v where KG(v, _)
         def edge = v1str, v2str: v1str=string[v1] and v2str=string[v2] and
-                                KG(_, x, y, zs...) and KG(v1, x) and KG(v2, y) and
+                                KG(_, x, y) and KG(v1, x) and KG(v2, y) and
                                 Entity(x) and Entity(y)
-                                from x, y, v1, v2, zs...
+                                from x, y, v1, v2
         def edge_attribute = v1str, v2str, "label", estr: 
                                 estr=string[e] and
                                 v1str=string[v1] and v2str=string[v2] and
-                                KG(e, x, y, zs...) and
+                                KG(e, x, y) and
                                 KG(v1, x) and 
                                 KG(v2, y)
-                                from x, y, e, v1, v2, zs...
+                                from x, y, e, v1, v2
 
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
@@ -81,60 +81,64 @@ module se_kg
 
 
     // Make ego-graph of KG
-    // Ego graph begins seeds entities plus all entities that are distanced up to max_degree
-    // jumps from them
-    // add seed node(s) - degree 0
+    // Ego graph begins with seed nodes (entities) plus all nodes that are up to max_distance
+    // distance from them.
+    // Parameters:
+    // KG - a knowledge graph to operate on
+    // seeds - seed entity nodes
+    // max_distance - maximum distanced nodes from seeds to include in result
     @outline // @ondemand
-    def _make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+    def _make_ego_kg[KG, seeds in Entity, max_distance in range[0, 10, 1]]
             (ename in RelName, e in Entity, 0) = 
                                     KG(ename, e) and e=seeds
     // recursively add nodes - degree + 1 
     @outline // @ondemand
-    def _make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
+    def _make_ego_kg[KG, seeds in Entity, max_distance in range[0, 10, 1]]
             (ename in RelName, e in Entity, deg in Int) = 
                                     KG(ename, e) and 
-                                    (KG(_, le, e, xs...) or KG(_, e, le, xs...)) and 
-                                    _make_ego_kg[KG, seeds, max_degree](_, le, pdeg) and 
+                                    (KG(rlshp, le, e) or KG(rlshp, e, le)) and 
+                                    _make_ego_kg[KG, seeds, max_distance](_, le, pdeg) and 
                                     deg=pdeg+1 
-                                    from le in Entity, pdeg in Int, xs...
-                                    where pdeg < max_degree
+                                    from le in Entity, pdeg in Int, rlshp in RelName
+                                    where pdeg < max_distance
     // add relations
     @outline // @ondemand
-    def _make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}]
-            (rel in RelName, e1 in Entity, e2 in Entity, xs...) = 
-                                    KG(rel, e1, e2, xs...) and 
-                                    _make_ego_kg[KG, seeds, max_degree](_, e1, _) and 
-                                    _make_ego_kg[KG, seeds, max_degree](_, e2, _)
+    def _make_ego_kg[KG, seeds in Entity, max_distance in range[0, 10, 1]]
+            (rel in RelName, e1 in Entity, e2 in Entity) = 
+                                    KG(rel, e1, e2) and 
+                                    _make_ego_kg[KG, seeds, max_distance](_, e1, i) and 
+                                    _make_ego_kg[KG, seeds, max_distance](_, e2, j)
+                                    from i in range[0, 10, 1], j in range[0, 10, 1]
 
     // copy KG and remove distances 
     @inline
     def remove_distance[KG_with_distance](ename in RelName, e in Entity) = KG_with_distance(ename, e, deg) from deg in Int
     @inline
-    def remove_distance[KG_with_distance](rel in RelName, e1 in Entity, e2 in Entity, xs...) = KG_with_distance(rel, e1, e2, xs...)
+    def remove_distance[KG_with_distance](rel in RelName, e1 in Entity, e2 in Entity) = KG_with_distance(rel, e1, e2)
 
 
     // Make ego-graph of KG
     @inline
-    def make_ego_kg[KG, seeds in Entity, max_degree in {0; 1; 2; 3; 4; 5; 6; 7;}] = 
-                                    remove_distance[_make_ego_kg[KG, seeds, max_degree]]
+    def make_ego_kg[KG, seeds in Entity, max_distance in range[0, 10, 1]] = 
+                                    remove_distance[_make_ego_kg[KG, seeds, max_distance]]
 
     
     // Prepare Knowledge Graph for graphviz
     @outline
     module make_graphviz_object[KG, OPTS]
         def node(e in Entity) = KG(r, e) from r in RelName
-        def edge(n1 in Entity, n2 in Entity) = KG(r, n1, n2, xs...) from r in RelName, xs...
+        def edge(n1 in Entity, n2 in Entity) = KG(r, n1, n2) from r in RelName
 
         def node_attribute[n, "label"] = OPTS:ui:show[n], node(n)
 
         // graphviz options
         def node_attribute[n, "shape"] = shape_map[KG, OPTS][t] from t where KG(t, n)
 
-        def edge_attribute = x, y, "label", rstr: 
+        def edge_attribute = x in Entity, y in Entity, "label", rstr: 
                                 rstr=string[r] and
-                                KG(r, x, y, zs...) and
+                                KG(r, x, y) and
                                 OPTS:graphviz:label_edges(boolean_true)
-                                from r in RelName, zs...
+                                from r in RelName
         
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
