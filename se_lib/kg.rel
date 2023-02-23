@@ -23,11 +23,11 @@ module se_kg
 
     @inline
     module get_kg_signature[KG]
-        def _nodes = count[r in RelName, e in Entity: imdb_kg_ext(r, e)]
-        def _edges = count[r in RelName, e1 in Entity, e2 in Entity: imdb_kg_ext(r, e1, e2, xs...) and r!=:show from xs...]
-        def __entity_counts[r in RelName] = count[e: imdb_kg_ext(r, e)]
-        def __relation_counts[r in RelName] = count[e1, e2: imdb_kg_ext(r, e1, e2, xs...) and r!=:show from xs...]
-        def ___shows = count[xs...: imdb_kg_ext(:show, xs...)]
+        def total_nodes = count[r in RelName, e in Entity: KG(r, e)]
+        def total_edges = count[r in RelName, e1 in Entity, e2 in Entity: KG(r, e1, e2, xs...) and r!=:show from xs...]
+        def __entity_counts[r in RelName] = count[e: KG(r, e)]
+        def __relation_counts[r in RelName] = count[e1, e2: KG(r, e1, e2, xs...) and r!=:show from xs...]
+        def ___shows = count[xs...: KG(:show, xs...)]
     end
 
     // graph signature to compare graph topologies -
@@ -81,48 +81,35 @@ module se_kg
 
 
     // Make ego-graph of KG
-    // Ego graph begins with seed nodes (entities) plus all nodes that are up to max_distance
+    // Ego graph begins with center (seed) entities (nodes) and includes all nodes that are up to radius
     // distance from them.
     // Parameters:
     // KG - a knowledge graph to operate on
-    // seeds - seed entity nodes
-    // max_distance - maximum distanced nodes from seeds to include in result
-    @outline // @ondemand
-    def _make_ego_kg[KG, seeds in Entity, max_distance in range[0, 10, 1]]
-            (ename in RelName, e in Entity, 0) = 
-                                    KG(ename, e) and e=seeds
-    // recursively add nodes - degree + 1 
-    @outline // @ondemand
-    def _make_ego_kg[KG, seeds in Entity, max_distance in range[0, 10, 1]]
-            (ename in RelName, e in Entity, deg in Int) = 
-                                    KG(ename, e) and 
-                                    (KG(rlshp, le, e) or KG(rlshp, e, le)) and 
-                                    _make_ego_kg[KG, seeds, max_distance](_, le, pdeg) and 
-                                    deg=pdeg+1 
-                                    from le in Entity, pdeg in Int, rlshp in RelName
-                                    where pdeg < max_distance
-    // add relations
-    @outline // @ondemand
-    def _make_ego_kg[KG, seeds in Entity, max_distance in range[0, 10, 1]]
-            (rel in RelName, e1 in Entity, e2 in Entity) = 
-                                    KG(rel, e1, e2) and 
-                                    _make_ego_kg[KG, seeds, max_distance](_, e1, i) and 
-                                    _make_ego_kg[KG, seeds, max_distance](_, e2, j)
-                                    from i in range[0, 10, 1], j in range[0, 10, 1]
+    // center - seed entity nodes
+    // radius - maximum distance from center to include nodes
+    @inline def induce_kg[KG, NODES](symb, n) = KG(symb, n) and NODES(n)
+    @inline def induce_kg[KG, NODES](symb, n, m) = KG(symb, n, m) and NODES(n) and NODES(m)
+    @inline def node[KG](n) = KG(_, n)
+    @inline def edge[KG](n, m) = KG(_, n, m); KG(_, m, n)
 
-    // copy KG and remove distances 
-    @inline
-    def remove_distance[KG_with_distance](ename in RelName, e in Entity) = KG_with_distance(ename, e, deg) from deg in Int
-    @inline
-    def remove_distance[KG_with_distance](rel in RelName, e1 in Entity, e2 in Entity) = KG_with_distance(rel, e1, e2)
+    @outline 
+    module ego_graph[KG]
+        // n is inside a ball of a given center and radius
+        @ondemand def ball(center in node[KG], 0, n) = center = n
+        @ondemand def ball(center in node[KG], radius in Int, n) = ball(center, radius-1, n) and radius > 0
+        @ondemand def ball(center in node[KG], radius in Int, n) = {
+            ball(center, radius-1, m) and
+            edge[KG](m, n) and
+            radius > 0
+            from m
+        }
+        @ondemand def kg[center, radius] = induce_kg[KG, ball[center, radius]]
+    end
+
+    @inline 
+    def make_ego_kg[KG, center, radius] = ego_graph[KG][:kg, center, radius]
 
 
-    // Make ego-graph of KG
-    @inline
-    def make_ego_kg[KG, seeds in Entity, max_distance in range[0, 10, 1]] = 
-                                    remove_distance[_make_ego_kg[KG, seeds, max_distance]]
-
-    
     // Prepare Knowledge Graph for graphviz
     @outline
     module make_graphviz_object[KG, OPTS]
