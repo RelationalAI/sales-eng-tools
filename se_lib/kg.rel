@@ -106,7 +106,7 @@ module se_kg
         @ondemand def kg[center, radius] = induce_kg[KG, ball[center, radius]]
     end
 
-    @inline 
+    @inline
     def make_ego_kg[KG, center, radius] = ego_graph[KG][:kg, center, radius]
 
 
@@ -120,6 +120,10 @@ module se_kg
 
         // graphviz options
         def node_attribute[n, "shape"] = shape_map[KG, OPTS][t] from t where KG(t, n)
+
+        // highlight nodes
+        def node_attribute[n, "color"] = "red", OPTS:ui:node:highlight(n)
+        def node_attribute[n, "fontcolor"] = "red", OPTS:ui:node:highlight(n)
 
         def edge_attribute = x in Entity, y in Entity, "label", rstr: 
                                 rstr=string[r] and
