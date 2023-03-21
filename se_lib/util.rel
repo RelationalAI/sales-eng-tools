@@ -137,4 +137,11 @@ module se_util
     // Test if module relname exists
     @outline
     def exists_relname[G, relname] = first[G](relname)
+
+
+    // Count table tuples by arity
+    @inline
+    def count_by_arity[R][a] = 
+        count[xs...: R(xs...) and arity[{xs...}]=a]
+
 end
