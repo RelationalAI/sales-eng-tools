@@ -105,12 +105,8 @@ module se_util
     //
     // extract Date from DateTime
     @inline
-    def cast_to_date[dt, tz](dd) =
-        daystr = datetime_day[dt, tz] and
-        monthstr = datetime_month[dt, tz] and
-        yearstr = datetime_year[dt, tz] and
-        dd = parse_date["%yearstr-%monthstr-%daystr", "Y-m-d"]
-        from daystr, monthstr, yearstr
+    def cast_to_date[dt, tz](d) = 
+        ^Date[dt, tz](d)
 
     // date intervals overlap
     @inline
