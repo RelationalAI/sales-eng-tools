@@ -128,7 +128,7 @@ module se_kg
         def edge_attribute = x in Entity, y in Entity, "label", rstr: 
                                 rstr=string[r] and
                                 KG(r, x, y) and
-                                OPTS:graphviz:label_edges(boolean_true)
+                                (OPTS:graphviz:label_edges <++ boolean_false)(boolean_true)
                                 from r in RelName
         
         def layout = OPTS:graphviz:layout <++ "dot" 
