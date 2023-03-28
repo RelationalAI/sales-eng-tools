@@ -129,6 +129,13 @@ module se_kg
                                 rstr=string[r] and
                                 KG(r, x, y) and
                                 (OPTS:graphviz:label_edges <++ boolean_false)(boolean_true)
+                                // in the future consider using multiple dispatch around OPTS:graphviz:label_edges depending
+                                // on the type of relation. For example:
+                                // OPTS:graphviz:label_edges(r) to label only on specified relationships
+                                // and use multiple dispatch approach similar to
+                                // https://github.com/RelationalAI/raicode/blob/master/src/rel/vegalite.rel#L625 
+                                // but at the level of 
+                                // def edge_attribute = ...
                                 from r in RelName
         
         def layout = OPTS:graphviz:layout <++ "dot" 
