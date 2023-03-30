@@ -123,7 +123,9 @@ module se_kg
 
         // highlight nodes
         def node_attribute[n, "color"] = "red", OPTS:ui:node:highlight(n)
-        def node_attribute[n, "fontcolor"] = "red", OPTS:ui:node:highlight(n)
+        def node_attribute[n, "fontcolor"] = "white", OPTS:ui:node:highlight(n)
+        def node_attribute[n, "style"] = "bold", OPTS:ui:node:highlight(n)
+        def node_attribute[n, "style"] = "filled", OPTS:ui:node:highlight(n)
 
         def edge_attribute = x in Entity, y in Entity, "label", rstr: 
                                 rstr=string[r] and
