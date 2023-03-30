@@ -21,6 +21,38 @@ module se_kg
             DATA(entity_rel, r, e1, e2, xs...) 
             from entity_rel in RelName, xs...
 
+
+    // filter KG by types of entities and types of relations
+    // KG - knowledge graph to filter
+    // TYPES - types of entities to filter by
+    // RELATIONS - types of relations to filter by
+    @inline
+    def filter_kg_by_type[KG, TYPES](t, a) =
+            KG(TYPES, a)
+    @inline 
+    def filter_kg_by_type[KG, TYPES](r, a, b) =
+            KG(r, a, b) and KG(TYPES, a) and KG(TYPES, b)
+    @inline
+    def filter_kg_by_relation[KG, RELATIONS](t, a) {
+        KG(t, a) and (KG(RELATIONS, a, _) or KG(RELATIONS, _, a))
+    }
+    @inline
+    def filter_kg_by_relation[KG, RELATIONS](r, a, b) {
+        KG(RELATIONS, a, b) and r=RELATIONS 
+    }
+    @inline
+    def filter_kg[KG, TYPES, RELATIONS] =
+        if count[TYPES]>0 and count[RELATIONS]>0 
+        then filter_kg_by_relation[filter_kg_by_type[KG, TYPES], RELATIONS]
+        else if count[TYPES]>0 
+             then filter_kg_by_type[KG, TYPES] 
+             else if count[RELATIONS]>0 
+                  then filter_kg_by_relation[KG, RELATIONS]
+                  else KG
+                  end 
+             end 
+        end
+
     @inline
     module get_kg_signature[KG]
         def total_nodes = count[r in RelName, e in Entity: KG(r, e)]
