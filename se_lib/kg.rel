@@ -181,7 +181,8 @@ module se_kg
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
         def attribute[:graph, "label"] = OPTS:graphviz:title <++ "Knowledge Graph"
-        def attribute[:graph, "labelloc"] = "t"
+        def attribute[:graph, "labelloc"] = OPTS:graphviz:title:location <++ "t"
+        def attribute[:graph, "fontsize"] = OPTS:graphviz:title:fontsize <++ 14
     end
 
     // Auxiliary function to populate complete shape map 
