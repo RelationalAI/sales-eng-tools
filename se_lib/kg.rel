@@ -22,6 +22,44 @@ module se_kg
             from entity_rel in RelName, xs...
 
     @inline
+    def subset_kg[KG, NODE](t, a) =
+        KG(t, a) and a=NODE
+    @inline
+    def subset_kg[KG, NODE](r, a, b) =
+        KG(r, a, b) and a=NODE and b=NODE
+
+    // filter KG by types of entities and types of relations
+    // KG - knowledge graph to filter
+    // TYPES - types of entities to filter by
+    // RELATIONS - types of relations to filter by
+    @inline
+    def filter_kg_by_type[KG, TYPES](t, a) =
+            KG(TYPES, a)
+    @inline 
+    def filter_kg_by_type[KG, TYPES](r, a, b) =
+            KG(r, a, b) and KG(TYPES, a) and KG(TYPES, b)
+    @inline
+    def filter_kg_by_relation[KG, RELATIONS](t, a) {
+        KG(t, a) and (KG(RELATIONS, a, _) or KG(RELATIONS, _, a))
+    }
+    @inline
+    def filter_kg_by_relation[KG, RELATIONS](r, a, b) {
+        KG(RELATIONS, a, b) and r=RELATIONS 
+    }
+    @inline
+    def filter_kg[KG, TYPES, RELATIONS] =
+        if count[TYPES]>0 and count[RELATIONS]>0 
+        then filter_kg_by_relation[filter_kg_by_type[KG, TYPES], RELATIONS]
+        else if count[TYPES]>0 
+             then filter_kg_by_type[KG, TYPES] 
+             else if count[RELATIONS]>0 
+                  then filter_kg_by_relation[KG, RELATIONS]
+                  else KG
+                  end 
+             end 
+        end
+
+    @inline
     module get_kg_signature[KG]
         def total_nodes = count[r in RelName, e in Entity: KG(r, e)]
         def total_edges = count[r in RelName, e1 in Entity, e2 in Entity: KG(r, e1, e2, xs...) and r!=:show from xs...]
@@ -123,18 +161,28 @@ module se_kg
 
         // highlight nodes
         def node_attribute[n, "color"] = "red", OPTS:ui:node:highlight(n)
-        def node_attribute[n, "fontcolor"] = "red", OPTS:ui:node:highlight(n)
+        def node_attribute[n, "fontcolor"] = "white", OPTS:ui:node:highlight(n)
+        def node_attribute[n, "style"] = "bold", OPTS:ui:node:highlight(n)
+        def node_attribute[n, "style"] = "filled", OPTS:ui:node:highlight(n)
 
         def edge_attribute = x in Entity, y in Entity, "label", rstr: 
                                 rstr=string[r] and
                                 KG(r, x, y) and
-                                OPTS:graphviz:label_edges(boolean_true)
+                                (OPTS:graphviz:label_edges <++ boolean_false)(boolean_true)
+                                // in the future consider using multiple dispatch around OPTS:graphviz:label_edges depending
+                                // on the type of relation. For example:
+                                // OPTS:graphviz:label_edges(r) to label only on specified relationships
+                                // and use multiple dispatch approach similar to
+                                // https://github.com/RelationalAI/raicode/blob/master/src/rel/vegalite.rel#L625 
+                                // but at the level of 
+                                // def edge_attribute = ...
                                 from r in RelName
         
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
         def attribute[:graph, "label"] = OPTS:graphviz:title <++ "Knowledge Graph"
-        def attribute[:graph, "labelloc"] = "t"
+        def attribute[:graph, "labelloc"] = OPTS:graphviz:title:location <++ "t"
+        def attribute[:graph, "fontsize"] = OPTS:graphviz:title:fontsize <++ 14
     end
 
     // Auxiliary function to populate complete shape map 

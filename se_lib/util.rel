@@ -144,4 +144,28 @@ module se_util
     def count_by_arity[R][a] = 
         count[xs...: R(xs...) and arity[{xs...}]=a]
 
+
+    // Transform n-arity relation into GNF format
+    // Given n-arity relation R and its schema S (list of attribute names, preferrably as RelName's)
+    // to_gnf produces GNF representation of the same data from R in GNF(attribute, index, value)
+    // format. Insted of finding an natural uique key in the relation (if exists) it manufactures
+    // one using `enumerate[R]` and then uses `pivot` to transform data to GNF.
+    // Example:
+    // def data = {
+    // "A", 1, 2;
+    // "A", 3, 1;
+    // "B", 4, 2
+    // }
+    // def schema = {:name, :id, :value}
+    // def output = table[make_gnf[data, schema]]
+    // also see Slack: https://relationalai.slack.com/archives/CG4NZLU20/p1680121257404589?thread_ts=1680110655.756849&cid=CG4NZLU20
+    @inline
+    def to_gnf[R, SCHEMA](attr, idx, val) {
+        arity[R]=arity[SCHEMA] and
+        enumerate[R](idx, xs...) and
+        pivot[(xs...)](i, val) and
+        pivot[SCHEMA](i, attr)
+        from i, xs...
+    }
+
 end
