@@ -21,5 +21,6 @@ set -e
 
 for rel in $list; do
     echo "running read-write query '$rel' against database '$db'"
-    rai --profile $pro --engine $eng exec $db --file $rel
+    rai --profile $pro --engine $eng --format json exec $db --file $rel \
+        | jq -r '(.Transaction | [.id, .state] | join(" ")), .Problems'
 done
