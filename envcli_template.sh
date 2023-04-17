@@ -44,3 +44,7 @@ RAI_SE_UTIL_DIR=~/....../sales-eng-tools
 
 # Diffbot token (personal token for user)
 DIFFBOT_TOKEN=......
+
+# Re-parent Rel model source (used by load_source.sh)
+RAI_SE_UTIL_OLD_PARENT=old-directory
+RAI_SE_UTIL_NEW_PARENT=new-directory

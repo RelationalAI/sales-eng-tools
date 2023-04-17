@@ -1,6 +1,8 @@
 # Common tools from Sales Engineering
 
-This is a public repo to contain libraries, utilities, and other resources created by Sales Engineering and others to support and ehance ongoing and future RAI projects. These resources are not client specific, can be freely shared, distributed and updated in the spirit of OOS. 
+This is a public repo to contain libraries, utilities, and other resources created by Sales Engineering and others to 
+support and enhance ongoing and future RAI projects. 
+These resources are not client-specific, can be freely shared, distributed and updated in the spirit of OSS. 
 
 Free License is pending.
 
@@ -38,7 +40,7 @@ Bash, Python, Julia, etc., tools for command line usage.
     - **list_edb_names.sh** - list the EDBs in database RAI_CLI_DATABASE, in account RAI_CLI_PROFILE.
     - **list_engines.sh** - list the active engines in account RAI_CLI_PROFILE.
     - **load_source.sh** - load specified Rel source file into RAI_CLI_DATABASE, using RAI_CLI_ENGINE, in account RAI_CLI_PROFILE.
-    The relative path to the Rel source is preserved in the RAI model.
+    The relative path to the Rel source is preserved in the RAI model unless old/new reparenting directories are specified. 
     - **rai_bench_results_summary.sh** - generate human-readable summary results from
     the JSON Lines (_*.jsonl_) files in a Basic Workloads Benchmark framework ("RAI bench") output directory.
     The location of the Basic Workloads directory is specified in RAI_BENCH_DIR.
