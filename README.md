@@ -33,6 +33,7 @@ Bash, Python, Julia, etc., tools for command line usage.
     - **create_engine.sh** - spin up new Rel engine.
     The default name is specified by RAI_CLI_ENGINE variable,
     but a different name can be specified on the command line.
+    - **create_project_skel.sh** - create the directory structure for a new customer project
     - **delete_engine.sh** - spin down an existing Rel engine.
     The default name is specified by RAI_CLI_ENGINE variable,
     but a different name can be specified on the command line.
