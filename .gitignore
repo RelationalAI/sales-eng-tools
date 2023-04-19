@@ -2,6 +2,14 @@
 .DS_Store
 # ignore Jupyter notebook temp directories
 .ipynb_checkpoints
+
+# VisualStudio (VSCode)
+.vscode/*      # Maybe .vscode/**/* instead - see comments
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
 # ignore IMDB data folder
 /gregory/imdb/data
 .Rproj.user
