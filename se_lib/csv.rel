@@ -1,49 +1,61 @@
 module se_csv
+
+    @outline 
+    def as_is_attributes[ID, DATA, META](attr, e, val) =
+            ID(e, id) and
+            DATA(META:key, row, id) and
+            DATA(sym, row, val) and
+            META:as_is_attr(sym) and
+            (META:attr_alias_map[sym] <++ sym)(attr)
+            from row, id, sym
+            
     @outline
-    def parse_string_attributes[ID, DATA, key, META](attr, e, value) =
-        ID(e, id) and                        
-        DATA(key, row, id) and              
-        DATA(sym, row, value) and           
-        META:simple_string_attr(sym) and     
-        (META:attr_alias_map[sym] <++ sym)(attr)    
-        from row, id, sym
-        
-    @outline
-    def parse_int_attributes[ID, DATA, key, META](attr, e, value) =
+    def parse_int_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
-        DATA(key, row, id) and
+        DATA(META:key, row, id) and
         DATA(sym, row, int_str) and
-        parse_int(int_str, value) and
+        parse_int(int_str, val) and
         META:int_attr(sym) and
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, int_str
     
     @outline
-    def parse_date_attributes[ID, DATA, key, META](attr, e, value) = 
+    def parse_date_attributes[ID, DATA, META](attr, e, val) = 
         ID(e, id) and
-        DATA(key, row, id) and
+        DATA(META:key, row, id) and
         DATA(sym, row, date_str) and
-        parse_date(date_str, df, value) and
+        parse_date(date_str, df, val) and
         META:date_attr(sym, df) and
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, date_str, df
+
+    @outline
+    def parse_datetime_attributes[ID, DATA, META](attr, e, val) = 
+        ID(e, id) and
+        DATA(META:key, row, id) and
+        DATA(sym, row, datetime_str) and
+        parse_datetime(datetime_str, df, val) and
+        META:datetime_attr(sym, df) and
+        (META:attr_alias_map[sym] <++ sym)(attr)
+        from row, id, sym, datetime_str, df
     
     @outline
-    def parse_float_attributes[ID, DATA, key, META](attr, e, value) = 
+    def parse_float_attributes[ID, DATA, META](attr, e, val) = 
         ID(e, id) and
-        DATA(key, row, id) and
+        DATA(META:key, row, id) and
         DATA(sym, row, float_str) and
-        parse_float(float_str, value) and
+        parse_float(float_str, val) and
         META:float_attr(sym) and
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, float_str
     
     @inline
-    def parse_attributes[ID, DATA, key, META](attr, e, value) = 
-        parse_string_attributes[ID, DATA, key, META](attr, e, value);
-        parse_int_attributes[ID, DATA, key, META](attr, e, value);
-        parse_date_attributes[ID, DATA, key, META](attr, e, value);
-        parse_float_attributes[ID, DATA, key, META](attr, e, value)
+    def parse_attributes[ID, DATA, META](attr, e, val) = 
+            as_is_attributes[ID, DATA, META](attr, e, val);
+            parse_int_attributes[ID, DATA, META](attr, e, val);
+            parse_date_attributes[ID, DATA, META](attr, e, val);
+            parse_datetime_attributes[ID, DATA, META](attr, e, val);
+            parse_float_attributes[ID, DATA, META](attr, e, val)
     
     // @outline
     // def lookup_relation[relname, attr, ENTITY_GNF, DATA, REL_ENTITY_GNF](r, e, ue) = 
