@@ -48,6 +48,13 @@ Bash, Python, Julia, etc., tools for command line usage.
     The most recent output directory is used by default,
     but a different name can be specified on the command line.
 
+    Python tools for testing. 
+
+    - **parse_csv.py** - use Python's `csv` reader to explore customer-provided CSV files 
+    (if RAI's `load_csv` doesn't behave as expected). 
+    Use `parse_csv.py --file foo.csv --top 5 --full` to get started.
+    Use `parse_csv.py --help` for full help. 
+
 ## SE Rel library
 
 Folder [se_lib](/se_lib) contains Rel models:
