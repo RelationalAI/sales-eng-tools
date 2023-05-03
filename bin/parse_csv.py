@@ -14,7 +14,7 @@ def dump_dialect (dialect: csv.Dialect):
         "doublequote = %s\n"
         "lineterminator = %s\n"
         "skipinitialspace = %s\n"
-        "strict = %s\n"
+        # "strict = %s\n"               # not available in sniffed dialects, only in registered dialects
         % (
             repr(dialect.delimiter),
             dialect.escapechar,
@@ -22,7 +22,7 @@ def dump_dialect (dialect: csv.Dialect):
             dialect.doublequote,
             repr(dialect.lineterminator),
             repr(dialect.skipinitialspace),
-            repr(dialect.strict),
+        #     repr(dialect.strict),
         )
     )
 
@@ -50,7 +50,7 @@ def main():
 
     input_file = args.file
     line_num = args.line
-    top_n = args.top
+    top_n = args.top - 1            # line numbers are 0-origin (top 1 means line 0)
     sniff_len = args.sniff
     max_len = args.maxlen
     col_names = args.col
