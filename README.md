@@ -57,13 +57,20 @@ Bash, Python, Julia, etc., tools for command line usage.
 
 ## SE Rel library
 
-Folder [se_lib](/se_lib) contains Rel models:
+Folder [se_lib](/se_lib) contains Rel models for with various sets of utilities:
 
   * [util.rel](/se_lib/util.rel): collection of useful general purpose functions supplementing standard library functions
-  * [visual.rel](/se_lib/visual.rel): graphviz-based visualization functions for knowledge graphs, ontology, etc.
+  * [visual.rel](/se_lib/visual.rel) (**DEPRECATED**: do not use or stop using): graphviz-based visualization functions for knowledge graphs, ontology, etc.
+  * [kg.rel](/se_lib/kg.rel): collection of functions to construct, manipulate, operate on and visualize knowledge graphs based on standard data model
+  * [csv.rel](/se_lib/csv.rel): CSV file parsing and loading 
   * [debug.rel](/se_lib/debug.rel): TBD
 
-### Options (Configuration) Module Format
+### util.rel
+
+
+### kg.rel
+
+#### Options (Configuration) Module Format
 
 Example of options module (`OPTS`) passed to knowledge graph functions:
 ```
@@ -79,7 +86,148 @@ module kg_options
 end
 ```
 
-Knowldge graph visualization functions take 
+Knowldge graph visualization functions take ...
+
+### csv.rel
+
+To parse and map a CSV file into standard model use utility function `parse_attributes` defined in `csv.rel`. 
+
+Below is example from IMDB demo (see [imdb_model](https://github.com/RelationalAI/sales-engineering/blob/main/demos/imdb/notebooks/imdb_model.json) notebook for full code).
+
+#### Importing CSV file into RAI
+
+Suppose we have CSV file containing IMDB titles that has been loaded from Azure store like this:
+```
+// Title CSV
+@no_diagnostics(:UNDEFINED) 
+def delete[:title_csv] = title_csv
+def title_config:path = "s3://psilabs-public-files/imdb/title_basics_1953_votes_30.csv"
+def insert[:title_csv] = lined_csv[load_csv[title_config]]
+```
+
+#### Defining Entity Type
+
+The data will be used to create and populate entity `Title`. For this purpose we define several auxilary modules. First, module `create_entity` defines entity `Title` and its constructor function `title_from_id`:
+```
+entity type Title = String
+entity type Name = String
+
+module create_entity
+    def Title[x] = ^Title[x]
+    def title_from_id(id, e) = create_entity:Title[id](e) and 
+                                title_csv(imdb_meta:title:key, _, id)
+                                
+    def Name[x] = ^Name[x]
+    def name_from_id(id, e) = create_entity:Name[id](e) and
+                                name_csv(imdb_meta:name:key, _, id)
+end
+```
+
+#### Declaring Metadata
+
+Note, that we already used element from another auxilary module `imdb_meta` that defines all necessary metadata to load, parse, and define `Title` entity from CSV:
+```
+module imdb_meta
+
+    module title
+        def entity_name = :Title
+        def key = :tconst
+        def as_is_attr = {
+            :primaryTitle;
+            :titleType;
+        }
+        def int_attr = {
+            :startYear; :endYear; :numVotes; :runtimeMinutes;
+        }
+        def float_attr = {
+            :averageRating
+        }
+        def attr_alias_map = {
+            (:tconst, :id);
+        }
+    end
+
+    module name
+        def entity_name = :Name
+        def key = :nconst
+        def as_is_attr = {
+            :primaryName;
+            :primaryProfession;
+        }
+        def int_attr = {
+            :birthYear; :deathYear;
+        }
+        def attr_alias_map = {
+            (:nconst, :id);
+        }
+    end
+
+end
+```
+
+There are more elements meta module may define depending on CSV file content, for example, it could also define `datetime_attr` and `date_attr`. 
+
+Let's review what meta module does.
+
+First, we **always** define `entity_name` (usually by capitalizing first letter) and `key` (only single value keys are supported currently) like this:
+```
+def enity_name = :Title
+def key = :tconst
+```
+Next, we define fields according to their types. If the field type doesn't change from the one parsed/recognized by `load_csv` then it belongs to `as_is_attr`:
+```
+def as_is_attr = {
+            :primaryTitle;
+            :titleType;
+}
+```
+
+For integer fields loaded as strings use `int_attr`:
+```
+def int_attr = {
+            :startYear; :endYear; :numVotes; :runtimeMinutes;
+}
+
+```
+
+For float (decimals) use `float_attr`:
+```
+def float_attr = {
+            :averageRating
+}
+```
+
+For parsing `date` and `datetime` us date_attr and datetime_attr correspondingly (example not applicable to IMDB):
+```
+def datetime_attr = {
+            (:CreationDate, "y-m-dTH:M:S.sss"); 
+            (:LastAccessDate, "y-m-dTH:M:S.sss"); 
+}
+```
+
+More types could be supported in the future.
+
+Finally, use `attr_alias_map` to rename attributes (if necessary):
+```
+def attr_alias_map = {
+            (:nconst, :id);
+        }
+```
+
+Finally, we can create data model by mapping CSV file:
+```
+with se_csv use parse_attributes
+
+module imdb_data
+
+    // Title entity data
+    def title:id = transpose[create_entity:title_from_id]
+    def title(attr, e, val) = parse_attributes[title:id, title_csv, imdb_meta:title](attr, e, val)
+
+end
+```
+
+
 ## Spring REST API
 TBD...
 
