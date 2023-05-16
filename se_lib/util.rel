@@ -11,13 +11,13 @@ module se_util
     // Sample the first "limit" rows in relation "D".
     // Useful for exploring newly loaded CSV data.
     @outline
-    def head[D, limit in Int] =
+    def head[D, limit] =
         table[c, row, v: lined_csv[D](c, row, v) and row < limit]
 
     // Sample the last "limit" rows in relation "D".
     // Useful for exploring newly loaded CSV data.
     @outline
-    def tail[D, limit in Int] =
+    def tail[D, limit] =
     table[c, row, v: lined_csv[D](c, row, v) and
         row > count[x: D(_, x, _)] - limit]
 
