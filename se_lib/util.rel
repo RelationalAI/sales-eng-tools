@@ -168,4 +168,13 @@ module se_util
         from i, xs...
     }
 
+    @outline
+    module discrete_values_helper[R, PROBS, seed in Int]
+        @ondemand def cumsumagg[ct](lower_val, s) = lower_val=s-cprob, s=sum[t, prob: PROBS(t, prob) and PROBS(ct, cprob) and t <= ct] from cprob
+        @ondemand def data(e, t) = random_mersenne_twister[seed, R](e, rn) and 
+                        cumsumagg(t, dfrom, dto) and rn >= dfrom and rn < dto from rn, dfrom, dto
+    end
+    
+    @inline
+    def synthesize_discrete_values[R, PROBS, seed] = discrete_values_helper[R, PROBS, seed][:data]
 end
