@@ -21,6 +21,13 @@ module se_kg
             DATA(entity_rel, r, e1, e2, xs...) 
             from entity_rel in RelName, xs...
 
+
+    // Given KG produce graphlib graph object
+    @inline
+    def make_directed_graph[KG] = 
+        directed_graph[{n1 in Entity, n2 in Entity: KG(r, n1, n2) from r in RelName}]
+
+        
     @inline
     def subset_kg[KG, NODE](t, a) =
         KG(t, a) and a=NODE
@@ -116,6 +123,37 @@ module se_kg
         def attribute[:graph, "label"] = "%(OPTS:graphviz:title <++ "Knowledge Graph") Ontology"
         def attribute[:graph, "labelloc"] = "t"
     end
+
+    @outline
+    module distill_kg_ontology[KG, MODEL, OPTS]
+        def node = string[v] from v where KG(v, _)
+        def edge = v1str, v2str: v1str=string[v1] and v2str=string[v2] and
+                                KG(_, x, y) and KG(v1, x) and KG(v2, y) and
+                                Entity(x) and Entity(y)
+                                from x, y, v1, v2
+        def edge_attribute = v1str, v2str, "label", estr: 
+                                estr=string[e] and
+                                v1str=string[v1] and v2str=string[v2] and
+                                KG(e, x, y) and
+                                KG(v1, x) and 
+                                KG(v2, y)
+                                from x, y, e, v1, v2
+
+        def layout = OPTS:graphviz:layout <++ "dot" 
+        def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
+        def node_attribute[vs, "shape"] = shape_map[KG, OPTS][v], vs=string[v] from v where KG(v, _)
+        def attribute[:graph, "label"] = "%(OPTS:graphviz:title <++ "Knowledge Graph") Ontology"
+        def attribute[:graph, "labelloc"] = "t"
+
+        // add tooltips
+        def node_attribute[n, "tooltip"] = string_join[",\n", enumerate[{string[attr] 
+                                                                       from attr in RelName, entity_type in RelName, entity_name in RelName, e in Entity, val
+                                                                       where MODEL(entity_type, attr, e, val) and
+                                                                       KG(entity_name, e) and
+                                                                       n = string[entity_name] and
+                                                                       not Entity(val) 
+                                                                       }]]      
+    end    
 
 
     // Make ego-graph of KG
