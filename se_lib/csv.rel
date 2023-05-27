@@ -1,14 +1,25 @@
+with se_util use apply
+
 module se_csv
 
     @outline 
     def as_is_attributes[ID, DATA, META](attr, e, val) =
-            ID(e, id) and
-            DATA(META:key, row, id) and
-            DATA(sym, row, val) and
-            META:as_is_attr(sym) and
-            (META:attr_alias_map[sym] <++ sym)(attr)
-            from row, id, sym
-            
+        ID(e, id) and
+        DATA(META:key, row, id) and
+        DATA(sym, row, val) and
+        META:as_is_attr(sym) and
+        (META:attr_alias_map[sym] <++ sym)(attr)
+        from row, id, sym
+
+    @outline 
+    def parse_string_attributes[ID, DATA, META](attr, e, val) =
+        ID(e, id) and
+        DATA(META:key, row, id) and
+        DATA(sym, row, val_str) and
+        apply[META:string_attr[sym], val_str](val) and
+        (META:attr_alias_map[sym] <++ sym)(attr)
+        from row, id, sym, val_str
+        
     @outline
     def parse_int_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
@@ -48,10 +59,53 @@ module se_csv
         META:float_attr(sym) and
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, float_str
-    
+
+    // parse_attributes - apply definitions for columns, their types, formats, and transformations
+    // from the meta module to process and load CSV data file into data module
+    // Example of meta module:
+      // @inline def prepare_string[s in String] = uppercase[string_trim[s]]
+      //
+      // module cox_meta
+      //   module vehicle
+      //       def entity_name = :Vehicle
+      //       def key = :VEHICLE_ID
+      //       def as_is_attr = {
+      //           :BIDDER_NAME; :WEB_LINK;
+      //       }
+      //       def string_attr = {
+      //           (:MAKE, prepare_string); 
+      //           (:MODEL, prepare_string); 
+      //       }
+      //       def int_attr = {
+      //           :BIDS;
+      //       }
+      //       def float_attr = {
+      //           :VEHICLE_MARKET_PRICE;
+      //       }
+      //       def date_attr = {
+      //           (:SOLD_DATE, "Y-m-d");
+      //       }
+      //       def datetime_attr = {
+      //           (:CREATE_DATE, "y-m-dTH:M:S.sss"); 
+      //           (:LAST_ACCESS_DATE, "y-m-dTH:M:S.sss"); 
+      //       }
+      //       def attr_alias_map = {
+      //           (:MAKE, :make);
+      //           (:MODEL, :model);
+      //           (:VEHICLE_MARKET_PRICE, :marketPrice);
+      //           (:BIDDER_NAME, :bidderName);
+      //           (:BIDS, :bidCount);
+      //           (:WEB_LINK, :webLink);
+      //           (:SOLD_DATE, :soldDate);
+      //           (:CREATE_DATE, :createDate);
+      //           (:LAST_ACCESS_DATE, :lastAccessDate);
+      //       }
+      //   end
+      // end
     @inline
     def parse_attributes[ID, DATA, META](attr, e, val) = 
             as_is_attributes[ID, DATA, META](attr, e, val);
+            parse_string_attributes[ID, DATA, META](attr, e, val);
             parse_int_attributes[ID, DATA, META](attr, e, val);
             parse_date_attributes[ID, DATA, META](attr, e, val);
             parse_datetime_attributes[ID, DATA, META](attr, e, val);

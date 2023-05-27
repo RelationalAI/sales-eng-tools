@@ -184,4 +184,11 @@ module se_util
     //                                     }, 2023]
     @inline
     def synthesize_discrete_values[R, PROBS, seed] = discrete_values_helper[R, PROBS, seed][:data]
+
+    // Apply is a functional feature that allows generic application of an arbirtrary function relation to arbitrary dataset
+    // Example:
+    // @inline def prepare_string[s in String] = uppercase[string_trim[s]]
+    // def output = apply[prepare_string][{"aBc "; " edF"; "qwerty"}]
+    @inline
+    def apply[R][xs...] = v: R(xs..., v)
 end
