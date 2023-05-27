@@ -104,22 +104,23 @@ module se_kg
     // end
     @outline
     module distill_kg_ontology[KG, OPTS]
-        def node = string[v] from v where KG(v, _)
-        def edge = v1str, v2str: v1str=string[v1] and v2str=string[v2] and
-                                KG(_, x, y) and KG(v1, x) and KG(v2, y) and
-                                Entity(x) and Entity(y)
-                                from x, y, v1, v2
-        def edge_attribute = v1str, v2str, "label", estr: 
-                                estr=string[e] and
-                                v1str=string[v1] and v2str=string[v2] and
-                                KG(e, x, y) and
-                                KG(v1, x) and 
-                                KG(v2, y)
-                                from x, y, e, v1, v2
+        def node = despecialize[v] from v in RelName where KG(v, _)
+        def edge = despecialize[v1], despecialize[v2] 
+                        from v1 in RelName, v2 in RelName, x1 in Entity, x2 in Entity
+                        where KG(_, x1, x2) and KG(v1, x1) and KG(v2, x2) 
+                
+        def edge_attribute = despecialize[v1], despecialize[v2], "label", despecialize[r]
+                        from v1 in RelName, v2 in RelName, x1 in Entity, x2 in Entity, r in RelName
+                        where KG(r, x1, x2) and KG(v1, x1) and KG(v2, x2) 
 
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
-        def node_attribute[vs, "shape"] = shape_map[KG, OPTS][v], vs=string[v] from v where KG(v, _)
+        //def node_attribute[v, "label"] = despecialize[v], node(v)
+        def node_attribute[vs, "shape"] = shape_map[KG, OPTS][v] 
+                                            from v in RelName 
+                                            where node(despecialize[v]) and 
+                                            KG(v, _) and 
+                                            despecialize(v, vs) 
         def attribute[:graph, "label"] = "%(OPTS:graphviz:title <++ "Knowledge Graph") Ontology"
         def attribute[:graph, "labelloc"] = "t"
     end
