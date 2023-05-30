@@ -103,57 +103,30 @@ module se_kg
     //      def serviced_at(w, s) = workorder:site(w, s)
     // end
     @outline
-    module distill_kg_ontology[KG, OPTS]
+    module distill_kg_ontology[KG, MODEL, OPTS]
         def node = despecialize[v] from v in RelName where KG(v, _)
         def edge = despecialize[v1], despecialize[v2] 
                         from v1 in RelName, v2 in RelName, x1 in Entity, x2 in Entity
-                        where KG(_, x1, x2) and KG(v1, x1) and KG(v2, x2) 
-                
+                        where KG(_, x1, x2) and KG(v1, x1) and KG(v2, x2)
         def edge_attribute = despecialize[v1], despecialize[v2], "label", despecialize[r]
                         from v1 in RelName, v2 in RelName, x1 in Entity, x2 in Entity, r in RelName
-                        where KG(r, x1, x2) and KG(v1, x1) and KG(v2, x2) 
+                        where KG(r, x1, x2) and KG(v1, x1) and KG(v2, x2)
 
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
-        //def node_attribute[v, "label"] = despecialize[v], node(v)
-        def node_attribute[vs, "shape"] = shape_map[KG, OPTS][v] 
-                                            from v in RelName 
-                                            where node(despecialize[v]) and 
-                                            KG(v, _) and 
-                                            despecialize(v, vs) 
-        def attribute[:graph, "label"] = "%(OPTS:graphviz:title <++ "Knowledge Graph") Ontology"
-        def attribute[:graph, "labelloc"] = "t"
-    end
-
-    @outline
-    module distill_kg_ontology[KG, MODEL, OPTS]
-        def node = string[v] from v where KG(v, _)
-        def edge = v1str, v2str: v1str=string[v1] and v2str=string[v2] and
-                                KG(_, x, y) and KG(v1, x) and KG(v2, y) and
-                                Entity(x) and Entity(y)
-                                from x, y, v1, v2
-        def edge_attribute = v1str, v2str, "label", estr: 
-                                estr=string[e] and
-                                v1str=string[v1] and v2str=string[v2] and
-                                KG(e, x, y) and
-                                KG(v1, x) and 
-                                KG(v2, y)
-                                from x, y, e, v1, v2
-
-        def layout = OPTS:graphviz:layout <++ "dot" 
-        def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
-        def node_attribute[vs, "shape"] = shape_map[KG, OPTS][v], vs=string[v] from v where KG(v, _)
+        def node_attribute[vs, "shape"] = shape_map[KG, OPTS][v] from v in RelName 
+                                            where KG(v, _) and despecialize(v, vs) 
+                                            // node(despecialize[v]) and 
         def attribute[:graph, "label"] = "%(OPTS:graphviz:title <++ "Knowledge Graph") Ontology"
         def attribute[:graph, "labelloc"] = "t"
 
-        // add tooltips
-        def node_attribute[n, "tooltip"] = string_join[",\n", enumerate[{string[attr] 
-                                                                       from attr in RelName, entity_type in RelName, entity_name in RelName, e in Entity, val
-                                                                       where MODEL(entity_type, attr, e, val) and
-                                                                       KG(entity_name, e) and
-                                                                       n = string[entity_name] and
-                                                                       not Entity(val) 
-                                                                       }]]      
+        def node_attribute[vs, "tooltip"] = concat["%(vs) attributes:\n", string_join[",\n", enumerate[{despecialize[attr] 
+                                                   from attr in RelName, entity_type in RelName, entity_name in RelName, e in Entity, val
+                                                   where MODEL(entity_type, attr, e, val) and
+                                                   KG(entity_name, e) and 
+                                                   despecialize(entity_name, vs) and
+                                                   not Entity(val) 
+                                            }]]]     
     end    
 
 
