@@ -1,0 +1,40 @@
+// *****************************************************************
+// Sales Engineering Graph Library
+//
+// Tools for creating knowledge graphs and visualizations.
+//
+// INSTALL this source: se_lib/graph.rel
+// *****************************************************************
+
+module se_graph
+
+    @outline
+    module induce_graph_subset[G, NODES]
+        def is_directed = G:is_directed
+        def node(n) = NODES(n) and G:node(n)
+        def edge(a, b) = {G:edge(a, b) and NODES(a) and NODES(b)}
+    end
+
+    @inline
+    def egonet_graphlib[G, seeds, distance] =
+        induce_graph_subset[G, {more_nodes: rel:graphlib[G][:shortest_path_length][seeds, more_nodes, range[0, distance, 1]]}]
+
+
+    @outline @ondemand 
+    module egonet_ball_sphere[G]
+        def ball[center in G:node, 0] = center
+        def ball(center in G:node, radius in Int, m) = 
+                    ball(center, radius-1, m) or
+                    exists n: 
+                        ball(G, center, radius-1, n) and
+                        G:edge(n, m), 
+                    radius > 0
+    
+        def sphere[center in G:node, 0] = center
+        def sphere(center in G:node, radius in Int, n) = 
+                    ball(center, radius, n) and 
+                    not ball(center, radius - 1, n)
+    end
+    
+    @inline def make_egonet[KG, seeds, distance] = egonet_ball_sphere[KG][:ball][seeds, distance]
+end
