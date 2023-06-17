@@ -118,9 +118,14 @@ module se_kg
 
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
-        def node_attribute[vs, "shape"] = shape_map[KG, OPTS][v] from v in RelName 
+        def node_attribute[vs, "shape"] = gv_shape_map[KG, OPTS][v] from v in RelName 
                                             where KG(v, _) and despecialize(v, vs) 
-                                            // node(despecialize[v]) and 
+        def node_attribute[vs, gv_attr] = gv_color_map[KG, OPTS][v] from v in RelName
+                                            where KG(v, _) and despecialize(v, vs) and
+                                            gv_attr = {"color"; "fontcolor"}
+        def node_attribute[vs, "style"] = gv_style_map[KG, OPTS][v] from v in RelName
+                                            where KG(v, _) and despecialize(v, vs)
+
         def attribute[:graph, "label"] = "%(OPTS:graphviz:title <++ "Knowledge Graph") Ontology"
         def attribute[:graph, "labelloc"] = "t"
 
@@ -185,7 +190,10 @@ module se_kg
         def node_attribute[n, "label"] = OPTS:ui:show[n], node(n)
 
         // graphviz options
-        def node_attribute[n, "shape"] = shape_map[KG, OPTS][t] from t where KG(t, n)
+        def node_attribute[n, "shape"] = gv_shape_map[KG, OPTS][t] from t where KG(t, n)
+        def node_attribute[n, gv_attr] = gv_color_map[KG, OPTS][t] from t where KG(t, n) and
+                                            gv_attr = {"color"; "fontcolor"} 
+        def node_attribute[n, "style"] = gv_style_map[KG, OPTS][t] from t where KG(t, n)
 
         // highlight nodes
         def node_attribute[n, "color"] = "red", OPTS:ui:node:highlight(n)
@@ -213,15 +221,19 @@ module se_kg
         def attribute[:graph, "fontsize"] = OPTS:graphviz:title:fontsize <++ 14
     end
 
-    // Auxiliary function to populate complete shape map 
-    // based on options
-    @inline
-    def shape_map[KG, OPTS] =
+    // Auxiliary functions to populate graphviz attributes
+    // based on corresponding maps defined in graphviz options
+    @inline def gv_shape_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_shape, "box"]
+    @inline def gv_color_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_color, "black"]
+    @inline def gv_style_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_style, "solid"]
+
+    @inline 
+    def gv_attr_map[KG, OPTS, map_name, default_attr] = 
         default_value[first[se_util:arity_filter[KG, 2]],
-                    if se_util:exists_relname[OPTS, :graphviz] and 
-                        se_util:exists_relname[OPTS:graphviz, :entity_shape]
-                    then OPTS:graphviz:entity_shape 
-                    else {} 
-                    end, 
-                    "box"]
+                    if se_util:exists_relname[OPTS, :graphviz] and
+                        se_util:exists_relname[OPTS:graphviz, map_name]
+                    then OPTS:graphviz[map_name]
+                    else {}
+                    end,
+                    default_attr]
 end
