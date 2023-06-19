@@ -1,8 +1,10 @@
-with se_util use apply
+// with se_util use apply
+// replace the above with fully-qualified references to se_util:apply
+// See NCDNTS-853, https://relationalai.atlassian.net/browse/NCDNTS-853
 
 module se_csv
 
-    @outline 
+    @outline
     def as_is_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
         DATA(META:key, row, id) and
@@ -11,15 +13,15 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym
 
-    @outline 
+    @outline
     def parse_string_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, val_str) and
-        apply[META:string_attr[sym], val_str](val) and
+        se_util:apply[META:string_attr[sym], val_str](val) and
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, val_str
-        
+
     @outline
     def parse_int_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
@@ -29,9 +31,9 @@ module se_csv
         META:int_attr(sym) and
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, int_str
-    
+
     @outline
-    def parse_date_attributes[ID, DATA, META](attr, e, val) = 
+    def parse_date_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, date_str) and
@@ -41,7 +43,7 @@ module se_csv
         from row, id, sym, date_str, df
 
     @outline
-    def parse_datetime_attributes[ID, DATA, META](attr, e, val) = 
+    def parse_datetime_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, datetime_str) and
@@ -49,9 +51,9 @@ module se_csv
         META:datetime_attr(sym, df) and
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, datetime_str, df
-    
+
     @outline
-    def parse_float_attributes[ID, DATA, META](attr, e, val) = 
+    def parse_float_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, float_str) and
@@ -73,8 +75,8 @@ module se_csv
       //           :BIDDER_NAME; :WEB_LINK;
       //       }
       //       def string_attr = {
-      //           (:MAKE, prepare_string); 
-      //           (:MODEL, prepare_string); 
+      //           (:MAKE, prepare_string);
+      //           (:MODEL, prepare_string);
       //       }
       //       def int_attr = {
       //           :BIDS;
@@ -86,8 +88,8 @@ module se_csv
       //           (:SOLD_DATE, "Y-m-d");
       //       }
       //       def datetime_attr = {
-      //           (:CREATE_DATE, "y-m-dTH:M:S.sss"); 
-      //           (:LAST_ACCESS_DATE, "y-m-dTH:M:S.sss"); 
+      //           (:CREATE_DATE, "y-m-dTH:M:S.sss");
+      //           (:LAST_ACCESS_DATE, "y-m-dTH:M:S.sss");
       //       }
       //       def attr_alias_map = {
       //           (:MAKE, :make);
@@ -103,16 +105,16 @@ module se_csv
       //   end
       // end
     @inline
-    def parse_attributes[ID, DATA, META](attr, e, val) = 
+    def parse_attributes[ID, DATA, META](attr, e, val) =
             as_is_attributes[ID, DATA, META](attr, e, val);
             parse_string_attributes[ID, DATA, META](attr, e, val);
             parse_int_attributes[ID, DATA, META](attr, e, val);
             parse_date_attributes[ID, DATA, META](attr, e, val);
             parse_datetime_attributes[ID, DATA, META](attr, e, val);
             parse_float_attributes[ID, DATA, META](attr, e, val)
-    
+
     // @outline
-    // def lookup_relation[relname, attr, ENTITY_GNF, DATA, REL_ENTITY_GNF](r, e, ue) = 
+    // def lookup_relation[relname, attr, ENTITY_GNF, DATA, REL_ENTITY_GNF](r, e, ue) =
     //     ENTITY_GNF(:id, e, id) and
     //     DATA(mosaic_meta:account:key, row, id) and
     //     DATA(attr, row, userId) and
