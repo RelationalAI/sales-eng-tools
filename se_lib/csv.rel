@@ -8,13 +8,14 @@
     def key = RelName  // unique column name 
     def alt_key = RelName   // alternative unique column name
     def as_is_attr = RelName
-    def string_attr = RelName, Any, Any // Column names and dedicated pre-processing functions
+    def string_attr = {RelName, String, String} // Column names and dedicated pre-processing functions
     def int_attr = RelName
     def float_attr = RelName
     def date_attr = {RelName, String}  // Date column names with their formats
     def datetime_attr = {RelName, String}  // Datetime column names with their formats
     def attr_alias_map = {RelName, RelName}  // Rename columns map
     def null_string = String  // Special string for NULL values
+    def attr_description = RelName, String
 end
 
 module se_csv
