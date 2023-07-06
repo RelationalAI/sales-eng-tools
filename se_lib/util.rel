@@ -12,7 +12,7 @@ module se_util
     // Useful for exploring newly loaded CSV data.
     @outline
     def head[D, limit in Int] =
-        table[c, row, v: lined_csv[D](c, row, v) and row < limit]
+        table[c, row, v: lined_csv[D](c, row, v) and row <= limit]
 
     // Sample the last "limit" rows in relation "D".
     // Useful for exploring newly loaded CSV data.
