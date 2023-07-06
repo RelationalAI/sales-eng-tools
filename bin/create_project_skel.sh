@@ -10,4 +10,4 @@ BASE=$1
 APPNAME=$2
 
 mkdir -pv $BASE/$APPNAME/{model,util,constraint}
-mkdir -pv $BASE/{bin,orm,query,update,test,test_log,sample_data}
+mkdir -pv $BASE/{bin,orm,query,update,test,test_log,sample_data,snowflake}
