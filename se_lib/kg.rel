@@ -223,17 +223,16 @@ module se_kg
 
     // Auxiliary functions to populate graphviz attributes
     // based on corresponding maps defined in graphviz options
-    @inline def gv_shape_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_shape, "box"]
-    @inline def gv_color_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_color, "black"]
-    @inline def gv_style_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_style, "solid"]
+    @inline def gv_shape_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_shape]
+    @inline def gv_color_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_color]
+    @inline def gv_style_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_style]
 
-    @inline 
-    def gv_attr_map[KG, OPTS, map_name, default_attr] = 
-        default_value[first[se_util:arity_filter[KG, 2]],
+    @inline
+    def gv_attr_map[KG, OPTS, map_name] = 
                     if se_util:exists_relname[OPTS, :graphviz] and
                         se_util:exists_relname[OPTS:graphviz, map_name]
                     then OPTS:graphviz[map_name]
                     else {}
-                    end,
-                    default_attr]
+                    end
+    
 end
