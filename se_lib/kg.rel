@@ -106,38 +106,56 @@ module se_kg
     //      def created_for(w, c) = workorder:company(w, c)
     //      def serviced_at(w, s) = workorder:site(w, s)
     // end
-    @outline
-    module distill_kg_ontology[KG, MODEL, OPTS]
-        def node = despecialize[v] from v in RelName where KG(v, _)
-        def edge = despecialize[v1], despecialize[v2] 
-                        from v1 in RelName, v2 in RelName, x1 in Entity, x2 in Entity
-                        where KG(_, x1, x2) and KG(v1, x1) and KG(v2, x2)
-        def edge_attribute = despecialize[v1], despecialize[v2], "label", despecialize[r]
-                        from v1 in RelName, v2 in RelName, x1 in Entity, x2 in Entity, r in RelName
-                        where KG(r, x1, x2) and KG(v1, x1) and KG(v2, x2)
+    @inline
+    def distill_kg_ontology[KG, MODEL, OPTS] = {
+        distill_kg_ontology_graph[MODEL, despecialize_kg[KG, :NEW_KG]]; 
+        distill_kg_ontology_opts[OPTS, get_keys[KG]]
+    }
 
+    @outline
+    module despecialize_kg[KG]
+        def NEW_KG(k, v) = despecialize(rn, k) and KG(rn, v) and RelName(rn) from rn
+        def NEW_KG(k, v1, v2) = despecialize(rn, k) and KG(rn, v1, v2) and RelName(rn) and Entity(v1) and Entity(v2) from rn
+        def NEW_KG(k1, k2, v) = despecialize(rn1, k1) and despecialize(rn2, k2) and KG(rn1, rn2, v) and RelName(rn1) and RelName(rn2) and Entity(v) from rn1, rn2
+    end
+
+    @outline def get_keys[KG](k) = KG(k, _)
+
+    @outline
+    module distill_kg_ontology_graph[MODEL, DESPEC_KG]
+        // with despecialize_kg[KG] use NEW_KG
+        
+        def node(v) = DESPEC_KG(v, _)
+        
+        def edge(v1, v2) = DESPEC_KG(_, x1, x2) and DESPEC_KG(v1, x1) and DESPEC_KG(v2, x2) from x1, x2
+        
+        def edge_attribute = v1, v2, "label", r
+                        from v1, v2, x1 in Entity, x2 in Entity, r
+                        where DESPEC_KG(r, x1, x2) and DESPEC_KG(v1, x1) and DESPEC_KG(v2, x2)
+
+        def node_attribute[vs, "tooltip"] = concat["%(vs) attributes:\n", string_join[",\n", enumerate[{despecialize[attr] 
+                                                   from attr in RelName, entity_type in RelName, e in Entity, val
+                                                   where MODEL(entity_type, attr, e, val) and
+                                                   DESPEC_KG(vs, e) and
+                                                   not Entity(val) 
+                                            }]]]
+    end
+
+    @outline
+    module distill_kg_ontology_opts[OPTS, KEYS]
         def layout = OPTS:graphviz:layout <++ "dot" 
         def attribute:graph["rankdir"] = if layout="dot" then (OPTS:graphviz:direction <++ "LR") else {} end
-        def node_attribute[vs, "shape"] = gv_shape_map[KG, OPTS][v] from v in RelName 
-                                            where KG(v, _) and despecialize(v, vs) 
-        def node_attribute[vs, gv_attr] = gv_color_map[KG, OPTS][v] from v in RelName
-                                            where KG(v, _) and despecialize(v, vs) and
+        def node_attribute[vs, "shape"] = gv_shape_map[OPTS][v] from v in RelName 
+                                            where KEYS(v) and despecialize(v, vs) 
+        def node_attribute[vs, gv_attr] = gv_color_map[OPTS][v] from v in RelName
+                                            where KEYS(v) and despecialize(v, vs) and
                                             gv_attr = {"color"; "fontcolor"}
-        def node_attribute[vs, "style"] = gv_style_map[KG, OPTS][v] from v in RelName
-                                            where KG(v, _) and despecialize(v, vs)
+        def node_attribute[vs, "style"] = gv_style_map[OPTS][v] from v in RelName
+                                            where KEYS(v) and despecialize(v, vs)
 
         def attribute[:graph, "label"] = "%(OPTS:graphviz:title <++ "Knowledge Graph") Ontology"
         def attribute[:graph, "labelloc"] = "t"
-
-        def node_attribute[vs, "tooltip"] = concat["%(vs) attributes:\n", string_join[",\n", enumerate[{despecialize[attr] 
-                                                   from attr in RelName, entity_type in RelName, entity_name in RelName, e in Entity, val
-                                                   where MODEL(entity_type, attr, e, val) and
-                                                   KG(entity_name, e) and 
-                                                   despecialize(entity_name, vs) and
-                                                   not Entity(val) 
-                                            }]]]     
-    end    
-
+    end
 
     // Make ego-graph of KG
     // Ego graph begins with center (seed) entities (nodes) and includes all nodes that are up to radius
@@ -190,10 +208,10 @@ module se_kg
         def node_attribute[n, "label"] = OPTS:ui:show[n], node(n)
 
         // graphviz options
-        def node_attribute[n, "shape"] = gv_shape_map[KG, OPTS][t] from t where KG(t, n)
-        def node_attribute[n, gv_attr] = gv_color_map[KG, OPTS][t] from t where KG(t, n) and
+        def node_attribute[n, "shape"] = gv_shape_map[OPTS][t] from t where KG(t, n)
+        def node_attribute[n, gv_attr] = gv_color_map[OPTS][t] from t where KG(t, n) and
                                             gv_attr = {"color"; "fontcolor"} 
-        def node_attribute[n, "style"] = gv_style_map[KG, OPTS][t] from t where KG(t, n)
+        def node_attribute[n, "style"] = gv_style_map[OPTS][t] from t where KG(t, n)
 
         // highlight nodes
         def node_attribute[n, "color"] = "red", OPTS:ui:node:highlight(n)
@@ -223,17 +241,16 @@ module se_kg
 
     // Auxiliary functions to populate graphviz attributes
     // based on corresponding maps defined in graphviz options
-    @inline def gv_shape_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_shape, "box"]
-    @inline def gv_color_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_color, "black"]
-    @inline def gv_style_map[KG, OPTS] = gv_attr_map[KG, OPTS, :entity_style, "solid"]
+    @inline def gv_shape_map[OPTS] = gv_attr_map[OPTS, :entity_shape]
+    @inline def gv_color_map[OPTS] = gv_attr_map[OPTS, :entity_color]
+    @inline def gv_style_map[OPTS] = gv_attr_map[OPTS, :entity_style]
 
-    @inline 
-    def gv_attr_map[KG, OPTS, map_name, default_attr] = 
-        default_value[first[se_util:arity_filter[KG, 2]],
+    @inline
+    def gv_attr_map[OPTS, map_name] = 
                     if se_util:exists_relname[OPTS, :graphviz] and
                         se_util:exists_relname[OPTS:graphviz, map_name]
                     then OPTS:graphviz[map_name]
                     else {}
-                    end,
-                    default_attr]
+                    end
+    
 end
