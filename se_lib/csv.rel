@@ -3,9 +3,9 @@
 // See NCDNTS-853, https://relationalai.atlassian.net/browse/NCDNTS-853
 
 // Every meta module can be bound by this:
-@inline module meta_csv_config 
+@inline module meta_csv_config
     def entity_name = RelName  // entity name to use in KG
-    def key = RelName  // unique column name 
+    def key = RelName  // unique column name
     def alt_key = RelName   // alternative unique column name
     def as_is_attr = RelName
     def string_attr = {RelName, String, String} // Column names and dedicated pre-processing functions
@@ -30,6 +30,7 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym
 
+    @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
     @outline
     def parse_string_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
