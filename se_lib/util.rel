@@ -185,6 +185,13 @@ module se_util
     @inline
     def synthesize_discrete_values[R, PROBS, seed] = discrete_values_helper[R, PROBS, seed][:data]
 
+    // Sample tuples from relation
+    // Example
+    // def my_sample = sample_relation[range[1, 100, 1], 12, 2023]
+    @inline
+    def sample_relation[R, n, seed] = 
+      top[n, {rnd, xs...: random_mersenne_twister[seed, R](xs..., rnd)}][_, _]
+
     // Apply is a functional feature that allows generic application of an arbirtrary function relation to arbitrary dataset
     // Example:
     // @inline def prepare_string[s in String] = uppercase[string_trim[s]]
