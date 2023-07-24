@@ -166,8 +166,8 @@ module se_kg
     // distance or radius - maximum distance from center to include nodes
     @inline def induce_kg[KG, NODES](symb, n) = KG(symb, n) and NODES(n)
     @inline def induce_kg[KG, NODES](symb, n, m) = KG(symb, n, m) and NODES(n) and NODES(m)
-    @inline def node[KG](n) = KG(_, n)
-    @inline def edge[KG](n, m) = KG(_, n, m); KG(_, m, n)
+    @outline def node[KG](n) = KG(_, n)
+    @outline def edge[KG](n, m) = KG(_, n, m); KG(_, m, n)
 
     @outline 
     module ego_graph[KG]
