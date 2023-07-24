@@ -46,7 +46,7 @@ module se_kg
     // TYPES - types of entities to filter by
     // RELATIONS - types of relations to filter by
     @inline def filter_kg_by_type[KG, TYPES](t, a) =
-            KG(TYPES, a)
+            KG(t, a) and t=TYPES
     @inline def filter_kg_by_type[KG, TYPES](r, a, b) =
             KG(r, a, b) and KG(TYPES, a) and KG(TYPES, b)
             

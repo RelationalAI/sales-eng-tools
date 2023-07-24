@@ -6,6 +6,7 @@
 @inline module meta_csv_config
     def entity_name = RelName  // entity name to use in KG
     def key = RelName  // unique column name
+    def subtypes = RelName // subtypes when generalizing to super type
     def alt_key = RelName   // alternative unique column name
     def as_is_attr = RelName
     def string_attr = {RelName, String, String} // Column names and dedicated pre-processing functions
