@@ -32,6 +32,7 @@ module se_csv
         from row, id, sym
 
     @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
+    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
     @outline
     def parse_string_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
@@ -53,6 +54,7 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, int_str
 
+    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
     @outline
     def parse_date_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
@@ -64,6 +66,7 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, date_str, df
 
+    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
     @outline
     def parse_datetime_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
