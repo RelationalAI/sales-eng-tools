@@ -101,6 +101,20 @@ module se_util
     def super_table[R, Col_names] = table[_make_table[R, Col_names]]
 
 
+    // Numerical Functions
+    @inline def round_with_precision[mode, x, p] {
+        xint + round[mode, xdec * 10 ^ p] / 10 ^ p
+        from xint, xdec
+        where xint = round[:ROUND_DOWN, x] and
+        xdec = x - xint
+    }
+
+
+    // String Functions
+    @inline def string_split_by_index[delimiter, text, index] = 
+        string_split[delimiter, text][index]
+
+
     // Date and Time Functions
     //
     // extract Date from DateTime
