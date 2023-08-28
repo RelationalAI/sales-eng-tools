@@ -8,6 +8,20 @@
 
 module se_graph
 
+    @inline
+    def is_graph[G] =
+        G(:is_directed) or
+        G(:edge, a, b) or
+        G(:node, n)
+        from a, b, n
+
+    @inline
+    def is_entity_graph[G] =
+        G(:is_directed) or
+        G(:edge, a, b) or
+        G(:node, n)
+        from a in Entity, b in Entity, n in Entity
+
     @outline
     module induce_graph_subset[G, NODES]
         def is_directed = G:is_directed
@@ -37,4 +51,27 @@ module se_graph
     end
     
     @inline def make_egonet[KG, seeds, distance] = egonet_ball_sphere[KG][:ball][seeds, distance]
+
+    // Connnected Components
+    @inline def connected_component_counts[G] {
+        {c: count[n: rel:graphlib[G][:weakly_connected_component](n, c)]}
+    }
+
+    @inline def enumerate_connected_component_counts[G] {
+        enumerate[transpose[connected_component_counts[G]]]
+    }
+
+    @inline def smallest_component[G] {
+        argmin[connected_component_counts[G]]
+    }
+
+    @inline def largest_component[G] {
+        argmax[connected_component_counts[G]]
+    }
+
+    @inline def median_component[G] {
+        last[enumerate_connected_component_counts[G][{trunc_to_int[(count[connected_component_counts[G]]+1)/2.]; 
+                                                     float_int_convert[ceil[(count[connected_component_counts[G]]+1)/2.]]}
+        ]]
+    }
 end

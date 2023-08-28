@@ -1,0 +1,49 @@
+module se_viz
+
+    @inline def plot_bars[DS, xtitle, ytitle, title] = 
+      vegalite:plot[
+          vegalite:bar[
+            {
+              :x;
+              :type, "ordinal";
+              :sort, "y";
+              :title, xtitle
+            },
+            {
+              :y;
+              :type, "quantitative";
+              :aggregate, "identity";
+              :title, ytitle;
+            },
+            {
+              :data, se_util:to_gnf[DS, {:x, :y}];
+              :title, title
+            }
+          ]
+        ],
+        arity[DS] = 2
+
+
+    @inline def get_top[GM, n] =
+        transpose[bottom[n, transpose[GM]][_]]
+
+
+    @inline def plot_top_bars[GM, n, xtitle, ytitle, title] =
+        plot_bars[get_top[GM, n], xtitle, ytitle, title]
+        
+
+    @inline def plot_graph_degree_histogram[G, bin_step] =
+        vegalite:plot[
+            vegalite:bar[
+                {
+                  :degree;
+                  :bin, boolean_true;
+                  :bin, :step, bin_step
+                },
+                { :aggregate, "count" },
+                { :data, {:degree, i, dgr: enumerate[rel:graphlib[G][:degree]](i, _, dgr)} }
+              ]
+            ],
+        se_graph:is_graph[G]
+        
+end
