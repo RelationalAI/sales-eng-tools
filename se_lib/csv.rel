@@ -8,7 +8,8 @@
     def key = RelName  // unique column name
     def subtypes = RelName // subtypes when generalizing to super type
     def alt_key = RelName   // alternative unique column name
-    def as_is_attr = RelName
+    def as_is_attr = RelName // attributes parsed as strings as is
+    def value_type_attr = RelName, Any // attributes that are converted to a type (from String)
     def string_attr = {RelName, String, String} // Column names and dedicated pre-processing functions
     def int_attr = RelName
     def float_attr = RelName
@@ -30,6 +31,16 @@ module se_csv
         META:as_is_attr(sym) and
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym
+
+    @outline
+    def parse_value_type_attributes[ID, DATA, META](attr, e, val) =
+        ID(e, id) and
+        DATA(META:key, row, id) and
+        DATA(sym, row, val_str) and
+        not META:null_string(val_str) and
+        META:value_type_attr[sym][val_str](val) and 
+        (META:attr_alias_map[sym] <++ sym)(attr)
+        from row, id, sym, val_str
 
     @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
     @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
@@ -134,6 +145,7 @@ module se_csv
     @inline
     def parse_attributes[ID, DATA, META](attr, e, val) =
             as_is_attributes[ID, DATA, META](attr, e, val);
+            parse_value_type_attributes[ID, DATA, META](attr, e, val);
             parse_string_attributes[ID, DATA, META](attr, e, val);
             parse_int_attributes[ID, DATA, META](attr, e, val);
             parse_date_attributes[ID, DATA, META](attr, e, val);
