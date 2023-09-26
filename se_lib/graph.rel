@@ -74,4 +74,33 @@ module se_graph
                                                      float_int_convert[ceil[(count[connected_component_counts[G]]+1)/2.]]}
         ]]
     }
+
+    @outline
+    module generate
+        @inline
+        module complete[n]
+            def node = range[1, n, 1]
+            def edge(n1, n2) = n1 > n2 and n1=node and n2=node
+        end
+
+        @inline
+        module build_nary_tree[n, d]
+            def depth_start[m] = float_int_convert[(n ^ (m-1) - 1)/(n-1)] + 1
+            def depth_range[m] = range[depth_start[m], depth_start[m+1]-1, 1]
+            def depth_incr[k, m] = float_int_convert[floor[(k - depth_start[m])/n]]
+
+            def node(k, m) = m=range[1, d, 1] and k=depth_range[m]
+
+            def edge(k, k1) = node(k1, m) and k=depth_start[m-1] + depth_incr[k1, m] from m where m=range[2, d, 1]
+        end
+
+        @inline
+        def induce_tree[NaryTree](:node, n) { NaryTree:node(n, _) }
+        def induce_tree[NaryTree](:edge, n, m) {NaryTree:edge(n, m)}
+
+        @inline
+        def nary_tree[n, d] {
+            induce_tree[build_nary_tree[n, d]]
+        }
+    end
 end
