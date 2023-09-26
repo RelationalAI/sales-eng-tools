@@ -50,7 +50,7 @@ module se_graph
                     not ball(center, radius - 1, n)
     end
     
-    @inline def make_egonet[KG, seeds, distance] = egonet_ball_sphere[KG][:ball][seeds, distance]
+    @inline def make_egonet[KG, SEEDS, distance] = egonet_ball_sphere[KG][:ball][SEEDS, distance]
 
     // Connnected Components
     @inline def connected_component_counts[G] {
@@ -75,14 +75,16 @@ module se_graph
         ]]
     }
 
-    @outline
+    @outline @ondemand
     module generate
+        // generate complete (full) graph of n nodes
         @inline
-        module complete[n]
+        module complete[n] 
             def node = range[1, n, 1]
-            def edge(n1, n2) = n1 > n2 and n1=node and n2=node
+            def edge(n1, n2) = n1 < n2 and n1=node and n2=node
         end
 
+        // n-arity tree generator helper functions
         @inline
         module build_nary_tree[n, d]
             def depth_start[m] = float_int_convert[(n ^ (m-1) - 1)/(n-1)] + 1
@@ -90,7 +92,6 @@ module se_graph
             def depth_incr[k, m] = float_int_convert[floor[(k - depth_start[m])/n]]
 
             def node(k, m) = m=range[1, d, 1] and k=depth_range[m]
-
             def edge(k, k1) = node(k1, m) and k=depth_start[m-1] + depth_incr[k1, m] from m where m=range[2, d, 1]
         end
 
@@ -98,6 +99,7 @@ module se_graph
         def induce_tree[NaryTree](:node, n) { NaryTree:node(n, _) }
         def induce_tree[NaryTree](:edge, n, m) {NaryTree:edge(n, m)}
 
+        // n-arity tree generator
         @inline
         def nary_tree[n, d] {
             induce_tree[build_nary_tree[n, d]]
