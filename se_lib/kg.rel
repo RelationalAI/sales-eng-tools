@@ -206,12 +206,12 @@ module se_kg
 
 
     // WIP
-    @outline
-    module ego_graph2[KG]
-        @ondemand def my_graph = make_graph[KG, false]
-        @inline def egonet[seeds, distance] = se_graph:make_egonet[my_graph, seeds, distance]
-        @inline def kg[seeds, distance] = induce_kg_from_graph[KG, egonet[seeds, distance]]
-    end
+    // @outline
+    // module ego_graph2[KG]
+    //     @ondemand def my_graph = make_graph[KG, false]
+    //     @inline def egonet[seeds, distance] = se_graph:make_egonet[my_graph, seeds, distance]
+    //     @inline def kg[seeds, distance] = induce_kg_from_graph[KG, egonet[seeds, distance]]
+    // end
 
     @inline
     def make_ego_kg2[KG, seeds, distance] = ego_graph2[KG][:kg, seeds, distance]
