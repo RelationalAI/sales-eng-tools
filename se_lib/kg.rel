@@ -8,6 +8,18 @@
 
 module se_kg
 
+    // test entity type using model
+    @inline 
+    def isType[MODEL, META, e in Entity, t in RelName] {
+        exists(v: MODEL[t][META[t][:key], e](v))
+    }
+
+    // report entity type using model
+    @inline
+    def whichType[MODEL, META, e in Entity](t in RelName) {
+        isType(MODEL, META, e, t)
+    }
+
     // make knowledge graph (KG)
     // This function expects data model DATA and config META
     // to create corresponding KG
