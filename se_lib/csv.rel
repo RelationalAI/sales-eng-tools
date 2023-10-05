@@ -9,8 +9,9 @@
     def subtypes = RelName // subtypes when generalizing to super type
     def alt_key = RelName   // alternative unique column name
     def as_is_attr = RelName // attributes parsed as strings as is
-    def value_type_attr = RelName, Any // attributes that are converted to a type (from String)
+    def value_type_attr = {RelName, Any, Any} // attributes that are converted to a type (from String)
     def string_attr = {RelName, String, String} // Column names and dedicated pre-processing functions
+    def string_transform_attr = {RelName, RelName, String, String}
     def int_attr = RelName
     def float_attr = RelName
     def date_attr = {RelName, String}  // Date column names with their formats
@@ -32,6 +33,8 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym
 
+    @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
+    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
     @outline
     def parse_value_type_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
@@ -54,6 +57,21 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, val_str
 
+    
+    @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
+    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
+    @outline
+    def parse_string_transform_attributes[ID, DATA, META](attr, e, val) =
+        ID(e, id) and
+        DATA(META:key, row, id) and
+        DATA(sym, row, val_str) and
+        not META:null_string(val_str) and
+        se_util:apply[META:string_transform_attr[sym, attr], val_str](val)
+        from row, id, sym, val_str
+
+    
+    @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
+    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
     @outline
     def parse_int_attributes[ID, DATA, META](attr, e, val) =
         ID(e, id) and
@@ -147,6 +165,7 @@ module se_csv
             as_is_attributes[ID, DATA, META](attr, e, val);
             parse_value_type_attributes[ID, DATA, META](attr, e, val);
             parse_string_attributes[ID, DATA, META](attr, e, val);
+            parse_string_transform_attributes[ID, DATA, META](attr, e, val);
             parse_int_attributes[ID, DATA, META](attr, e, val);
             parse_date_attributes[ID, DATA, META](attr, e, val);
             parse_datetime_attributes[ID, DATA, META](attr, e, val);
