@@ -283,4 +283,9 @@ module se_kg
                     else {}
                     end
 
+    @inline
+    def graphviz_kg[KG, OPTS] {
+        graphviz[make_graphviz_object[KG, OPTS]]
+    }
+
 end
