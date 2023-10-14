@@ -262,4 +262,15 @@ module se_util
     @inline
     def linear_predict[W, X][i] = sum[j: X[i, j] * W[j]]
 
+
+    // Combine values from multiple GNF columns
+    // into single relation.
+    // Duplicate tuples (values) are removed as this function
+    // doesn't preserve neither GNF key nor
+    // column names. But it does preserve arity of the values.
+    @inline
+    def union_multi_gnf_columns[R, ColNames] {
+        {xs...: R(ColNames, _, xs...)}
+    }
+
 end
