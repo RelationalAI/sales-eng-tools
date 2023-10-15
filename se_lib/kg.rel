@@ -52,13 +52,17 @@ module se_kg
 
     //*** end experiment
 
-    // Given KG produce graphlib graph object
-    @inline def make_graph[KG, is_directed] =
-        if is_directed = boolean_true then
-            directed_graph[{n1 in Entity, n2 in Entity: KG(r, n1, n2) from r in RelName}]
-        else
-            undirected_graph[{n1 in Entity, n2 in Entity: KG(r, n1, n2) from r in RelName}]
-        end
+    // Given KG produce an isomorphic graphlib graph, 
+    // but without types of nodes and types of relations.
+    @inline
+    module make_graph[KG, is_directed_bool]
+        def edge = n1 in Entity, n2 in Entity: 
+                    KG(r, n1, n2) 
+                    from r in RelName
+        def node = n: exists(t in RelName: KG(t, n))
+        def is_directed = if is_directed_bool=boolean_true then {()} else {} end 
+    end
+    
 
     @inline def  induce_kg_from_graph[G, KG] =
         ename, e: KG(ename, e) and G:node(e)
