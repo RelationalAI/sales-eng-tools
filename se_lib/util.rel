@@ -273,4 +273,12 @@ module se_util
         {xs...: R(ColNames, _, xs...)}
     }
 
+    // Debugging
+    // shortcut to test if 2 objects are equal and report result,
+    // usually used when debugging to send result to output
+    @inline
+    def print_equal[label, L, R, true_message, false_message] {
+        label, if equal[L, R] then true_message else false_message end
+    }
+    
 end
