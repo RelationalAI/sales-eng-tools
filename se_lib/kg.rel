@@ -52,6 +52,24 @@ module se_kg
 
     //*** end experiment
 
+    // Convert KG to isomorphic KG with integer nodes.
+    @outline 
+    module make_integer_kg[KG]
+        def _map = transpose[enumerate[e in Entity:
+                                        (exists t in RelName: KG(t, e))
+                                        or (exists r in RelName, eo in Entity, xs...: KG(r, e, eo, xs...))
+                                        or (exists r in RelName, eo in Entity, xs...: KG(r, eo, e, xs...))]]
+    end
+    @outline
+    def make_integer_kg[KG] {
+        {t in RelName, n in Int: 
+            exists(e in Entity: KG(t, e) and make_integer_kg[KG][:_map](e, n))};
+        {r in RelName, n1 in Int, n2 in Int, xs...: 
+            exists(e1 in Entity, e2 in Entity: KG(r, e1, e2, xs...) and
+            make_integer_kg[KG][:_map](e1, n1) and
+            make_integer_kg[KG][:_map](e2, n2))}
+    }
+
     // Given KG produce an isomorphic graphlib graph, 
     // but without types of nodes and types of relations.
     @inline
@@ -62,7 +80,19 @@ module se_kg
         def node = n: exists(t in RelName: KG(t, n))
         def is_directed = if is_directed_bool=boolean_true then {()} else {} end 
     end
-    
+
+    // Given KG produce an isomorphic graphlib graph,
+    // but without types of nodes and types of relations.
+    // It also maps all node values to integers and saves 
+    // resulting mapping inside `map` relations.
+    @inline
+    module make_graph_with_map[KG, is_directed_bool]
+        def map(e, i) = enumerate[ee: KG(_, ee)](i, e)
+        def node = n: exists(t in RelName, e in Entity: KG(t, e) and map(e, n))
+        def edge = n1, n2: exists(r in RelName, e1 in Entity, e2 in Entity: 
+                        KG(r, e1, e2) and map(e1, n1) and map(e2, n2))
+        def is_directed = if is_directed_bool=boolean_true then {()} else {} end 
+    end 
 
     @inline def  induce_kg_from_graph[G, KG] =
         ename, e: KG(ename, e) and G:node(e)
@@ -256,7 +286,7 @@ module se_kg
         def edge_attribute = x in Entity, y in Entity, "label", rstr:
                                 rstr=string[r] and
                                 KG(r, x, y) and
-                                (OPTS:graphviz:label_edges <++ boolean_false)(boolean_true)
+                                    (OPTS:graphviz:label_edges <++ boolean_false)(boolean_true)
                                 // in the future consider using multiple dispatch around OPTS:graphviz:label_edges depending
                                 // on the type of relation. For example:
                                 // OPTS:graphviz:label_edges(r) to label only on specified relationships
