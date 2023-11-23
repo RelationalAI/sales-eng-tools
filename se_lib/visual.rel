@@ -7,6 +7,7 @@
 // Tools for creating graphviz visuals.
 //
 // INSTALL this source: visual.rel
+// DEPRECATED: use kg.rel instead
 // *****************************************************************
 
 module se_visual
