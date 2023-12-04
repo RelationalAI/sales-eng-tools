@@ -175,7 +175,7 @@ module se_kg
     @outline
     module despecialize_kg[KG]
         def NEW_KG(k, v) = despecialize(rn, k) and KG:node(rn, v) and RelName(rn) from rn
-        def NEW_KG(k, v1, v2) = despecialize(rn, k) and KG:edge(rn, v1, v2, xs...) and RelName(rn) and Entity(v1) and Entity(v2) from rn, xs...
+        def NEW_KG(k, v1, v2) = despecialize(rn, k) and KG:edge(rn, v1, v2) and RelName(rn) and Entity(v1) and Entity(v2) from rn
         //def NEW_KG(k1, k2, v) = despecialize(rn1, k1) and despecialize(rn2, k2) and KG(rn1, rn2, v) and RelName(rn1) and RelName(rn2) and Entity(v) from rn1, rn2
     end
 
