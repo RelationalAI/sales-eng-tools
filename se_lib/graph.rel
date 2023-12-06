@@ -75,7 +75,7 @@ module se_graph
         ]]
     }
 
-    @outline @ondemand
+    //@outline @ondemand
     module generate
         // generate complete (full) graph of n nodes
         @inline
@@ -97,6 +97,7 @@ module se_graph
 
         @inline
         def induce_tree[NaryTree](:node, n) { NaryTree:node(n, _) }
+        @inline
         def induce_tree[NaryTree](:edge, n, m) {NaryTree:edge(n, m)}
 
         // n-arity tree generator

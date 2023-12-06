@@ -8,54 +8,6 @@
 
 @no_diagnostics(:RECURSIVE_INLINE) 
 module se_util
-    // Sample the first "limit" rows in relation "D".
-    // Useful for exploring newly loaded CSV data.
-    @outline
-    def head[D, limit in Int] =
-        table[c, row, v: lined_csv[D](c, row, v) and row <= limit]
-
-    // Sample the last "limit" rows in relation "D".
-    // Useful for exploring newly loaded CSV data.
-    @outline
-    def tail[D, limit in Int] =
-    table[c, row, v: lined_csv[D](c, row, v) and
-        row > count[x: D(_, x, _)] - limit]
-
-    // Count rows in CSV data file
-    @outline
-    def rowcount[D] =
-        count[row: lined_csv[D](_, row, _)]
-
-    // Count attributes in CSV data file
-    @outline
-    def attrcount[D] =
-        count[attr: lined_csv[D](attr, _, _)]
-
-
-    @inline 
-    def shape[D] =
-        {:rows, rowcount[D];
-         :cols, attrcount[D]}
-
-    // // Determine the number of entries in a JSON array of objects,
-    // // with special handling for empty arrays.
-    // def json_array_length[A] = count[i: A(:[], i, v...) from v...]
-
-    // def json_array_length[A] = 0, A(:[], missing)
-
-    // // Concatenate two JSON arrays, A1 and A2,
-    // // with special handling for empty arrays.
-    // //
-    // // The union operator (A1 ; A2) would perform a matrix union,
-    // // merging objects at the same array index.
-    // //
-    // // This concatenation function returns a new array with the
-    // // elements of A2 appended to the elements of A1.
-    // def json_array_concat[A1, A2](:[], i, v...) =
-    //     A1(:[], i, v...)
-
-    // def json_array_concat[A1, A2](:[], j, v...) =
-    //     A2(:[], i, v...) and j = json_array_length[A1] + i from i
 
     // // generate a random int number from the range
     // // key is a random seed
@@ -94,23 +46,6 @@ module se_util
         interval = round[:ROUND_NEAREST, seconds * scale] / scale
         from nanos, nanos_next, scale, seconds
       
-
-    // helper function for `super_table`
-    @outline
-    def _make_table[R, Col_names](col_name,
-                                row_i,
-                                val) {
-        pivot[Col_names](col_i, col_name) and
-        pivot[sort[R][row_i]](col_i, val)
-        from col_i
-    }
-
-    // print relation in table format
-    // with specified custom column names
-    // for now, the order of columns can't be controlled
-    @outline
-    def super_table[R, Col_names] = table[_make_table[R, Col_names]]
-
 
     // Numerical Functions
     @inline def round_with_precision[mode, x, p] {
@@ -262,16 +197,6 @@ module se_util
     @inline
     def linear_predict[W, X][i] = sum[j: X[i, j] * W[j]]
 
-
-    // Combine values from multiple GNF columns
-    // into single relation.
-    // Duplicate tuples (values) are removed as this function
-    // doesn't preserve neither GNF key nor
-    // column names. But it does preserve arity of the values.
-    @inline
-    def union_multi_gnf_columns[R, ColNames] {
-        {xs...: R(ColNames, _, xs...)}
-    }
 
     // Debugging
     // shortcut to test if 2 objects are equal and report result,
