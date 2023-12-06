@@ -24,7 +24,7 @@ end
 module se_csv
 
     @outline
-    def as_is_attributes[ID, DATA, META](attr, e, val) =
+    def as_is_attributes[ID, DATA, META](attr in RelName, e in Entity, val) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, val) and
@@ -33,10 +33,9 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym
 
-    @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
-    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
+    @no_diagnostics(:TYPE_MISMATCH)            // temp workaround: https://relationalai.atlassian.net/browse/RAI-19187
     @outline
-    def parse_value_type_attributes[ID, DATA, META](attr, e, val) =
+    def parse_value_type_attributes[ID, DATA, META](attr in RelName, e in Entity, val) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, val_str) and
@@ -45,10 +44,9 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, val_str
 
-    @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
-    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
+    
     @outline
-    def parse_string_attributes[ID, DATA, META](attr, e, val) =
+    def parse_string_attributes[ID, DATA, META](attr in RelName, e in Entity, val in String) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, val_str) and
@@ -57,11 +55,10 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, val_str
 
-    
-    @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
+
     @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
     @outline
-    def parse_string_transform_attributes[ID, DATA, META](attr, e, val) =
+    def parse_string_transform_attributes[ID, DATA, META](attr in RelName, e in Entity, val in String) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, val_str) and
@@ -70,10 +67,8 @@ module se_csv
         from row, id, sym, val_str
 
     
-    @no_diagnostics(:VARARGS)                   // temp workaround for system bug (recommended by Mary McGrath)
-    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
     @outline
-    def parse_int_attributes[ID, DATA, META](attr, e, val) =
+    def parse_int_attributes[ID, DATA, META](attr in RelName, e in Entity, val in Int) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, int_str) and
@@ -83,9 +78,10 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, int_str
 
-    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
+
+    @no_diagnostics(:TYPE_MISMATCH)            // temp workaround: https://relationalai.atlassian.net/browse/RAI-19187
     @outline
-    def parse_date_attributes[ID, DATA, META](attr, e, val) =
+    def parse_date_attributes[ID, DATA, META](attr in RelName, e in Entity, val in Date) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, date_str) and
@@ -95,9 +91,10 @@ module se_csv
         (META:attr_alias_map[sym] <++ sym)(attr)
         from row, id, sym, date_str, df
 
-    @no_diagnostics(:ARITY_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
+
+    @no_diagnostics(:TYPE_MISMATCH)            // temp workaround for system bug (recommended by Mary McGrath)
     @outline
-    def parse_datetime_attributes[ID, DATA, META](attr, e, val) =
+    def parse_datetime_attributes[ID, DATA, META](attr in RelName, e in Entity, val in DateTime) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, datetime_str) and
@@ -105,10 +102,12 @@ module se_csv
         parse_datetime(datetime_str, df, val) and
         META:datetime_attr(sym, df) and
         (META:attr_alias_map[sym] <++ sym)(attr)
-        from row, id, sym, datetime_str, df
+        from row, id, sym in RelName, datetime_str, df in String
 
+
+    @no_diagnostics(:TYPE_MISMATCH)            // temp workaround: https://relationalai.atlassian.net/browse/RAI-19187
     @outline
-    def parse_float_attributes[ID, DATA, META](attr, e, val) =
+    def parse_float_attributes[ID, DATA, META](attr in RelName, e in Entity, val in Float) =
         ID(e, id) and
         DATA(META:key, row, id) and
         DATA(sym, row, float_str) and
@@ -123,7 +122,7 @@ module se_csv
     // Example of meta module:
       // @inline def prepare_string[s in String] = uppercase[string_trim[s]]
       //
-      // module cox_meta
+      // module my_meta
       //   module vehicle
       //       def entity_name = :Vehicle
       //       def key = :VEHICLE_ID
@@ -161,7 +160,7 @@ module se_csv
       //   end
       // end
     @inline
-    def parse_attributes[ID, DATA, META](attr, e, val) =
+    def parse_attributes[ID, DATA, META](attr in RelName, e in Entity, val) =
             as_is_attributes[ID, DATA, META](attr, e, val);
             parse_value_type_attributes[ID, DATA, META](attr, e, val);
             parse_string_attributes[ID, DATA, META](attr, e, val);
