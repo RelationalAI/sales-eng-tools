@@ -1,8 +1,8 @@
 # Common tools from Sales Engineering
 
-This is a public repo to contain libraries, utilities, and other resources created by Sales Engineering and others to 
-support and enhance ongoing and future RAI projects. 
-These resources are not client-specific, can be freely shared, distributed and updated in the spirit of OSS. 
+This is a public repo to contain libraries, utilities, and other resources created by Sales Engineering and others to
+support and enhance ongoing and future RAI projects.
+These resources are not client-specific, can be freely shared, distributed and updated in the spirit of OSS.
 
 Free License is pending.
 
@@ -41,19 +41,19 @@ Bash, Python, Julia, etc., tools for command line usage.
     - **list_edb_names.sh** - list the EDBs in database RAI_CLI_DATABASE, in account RAI_CLI_PROFILE.
     - **list_engines.sh** - list the active engines in account RAI_CLI_PROFILE.
     - **load_source.sh** - load specified Rel source file into RAI_CLI_DATABASE, using RAI_CLI_ENGINE, in account RAI_CLI_PROFILE.
-    The relative path to the Rel source is preserved in the RAI model unless old/new reparenting directories are specified. 
+    The relative path to the Rel source is preserved in the RAI model unless old/new reparenting directories are specified.
     - **rai_bench_results_summary.sh** - generate human-readable summary results from
     the JSON Lines (_*.jsonl_) files in a Basic Workloads Benchmark framework ("RAI bench") output directory.
     The location of the Basic Workloads directory is specified in RAI_BENCH_DIR.
     The most recent output directory is used by default,
     but a different name can be specified on the command line.
 
-    Python tools for testing. 
+    Python tools for testing.
 
-    - **parse_csv.py** - use Python's `csv` reader to explore customer-provided CSV files 
-    (if RAI's `load_csv` doesn't behave as expected). 
+    - **parse_csv.py** - use Python's `csv` reader to explore customer-provided CSV files
+    (if RAI's `load_csv` doesn't behave as expected).
     Use `parse_csv.py --file foo.csv --top 5 --full` to get started.
-    Use `parse_csv.py --help` for full help. 
+    Use `parse_csv.py --help` for full help.
 
 ## SE Rel library
 
@@ -62,7 +62,7 @@ Folder [se_lib](/se_lib) contains Rel models for with various sets of utilities:
   * [util.rel](/se_lib/util.rel): collection of useful general purpose functions supplementing standard library functions
   * [visual.rel](/se_lib/visual.rel) (**DEPRECATED**: do not use or stop using): graphviz-based visualization functions for knowledge graphs, ontology, etc.
   * [kg.rel](/se_lib/kg.rel): collection of functions to construct, manipulate, operate on and visualize knowledge graphs based on standard data model
-  * [csv.rel](/se_lib/csv.rel): CSV file parsing and loading 
+  * [csv.rel](/se_lib/csv.rel): CSV file parsing and loading
   * [debug.rel](/se_lib/debug.rel): TBD
 
 ### util.rel
@@ -90,7 +90,7 @@ Knowldge graph visualization functions take ...
 
 ### csv.rel
 
-To parse and map a CSV file into standard model use utility function `parse_attributes` defined in `csv.rel`. 
+To parse and map a CSV file into standard model use utility function `parse_attributes` defined in `csv.rel`.
 
 Below is example from IMDB demo (see [imdb_model](https://github.com/RelationalAI/sales-engineering/blob/main/demos/imdb/notebooks/imdb_model.json) notebook for full code).
 
@@ -99,7 +99,7 @@ Below is example from IMDB demo (see [imdb_model](https://github.com/RelationalA
 Suppose we have CSV file containing IMDB titles that has been loaded from Azure store like this:
 ```
 // Title CSV
-@no_diagnostics(:UNDEFINED) 
+@no_diagnostics(:UNDEFINED_IDENTIFIER)
 def delete[:title_csv] = title_csv
 def title_config:path = "s3://psilabs-public-files/imdb/title_basics_1953_votes_30.csv"
 def insert[:title_csv] = lined_csv[load_csv[title_config]]
@@ -114,9 +114,9 @@ entity type Name = String
 
 module create_entity
     def Title[x] = ^Title[x]
-    def title_from_id(id, e) = create_entity:Title[id](e) and 
+    def title_from_id(id, e) = create_entity:Title[id](e) and
                                 title_csv(imdb_meta:title:key, _, id)
-                                
+
     def Name[x] = ^Name[x]
     def name_from_id(id, e) = create_entity:Name[id](e) and
                                 name_csv(imdb_meta:name:key, _, id)
@@ -165,7 +165,7 @@ module imdb_meta
 end
 ```
 
-There are more elements meta module may define depending on CSV file content, for example, it could also define `datetime_attr` and `date_attr`. 
+There are more elements meta module may define depending on CSV file content, for example, it could also define `datetime_attr` and `date_attr`.
 
 Let's review what meta module does.
 
@@ -200,8 +200,8 @@ def float_attr = {
 For parsing `date` and `datetime` us date_attr and datetime_attr correspondingly (example not applicable to IMDB):
 ```
 def datetime_attr = {
-            (:CreationDate, "y-m-dTH:M:S.sss"); 
-            (:LastAccessDate, "y-m-dTH:M:S.sss"); 
+            (:CreationDate, "y-m-dTH:M:S.sss");
+            (:LastAccessDate, "y-m-dTH:M:S.sss");
 }
 ```
 
