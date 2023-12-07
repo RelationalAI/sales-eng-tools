@@ -260,7 +260,7 @@ module se_kg
 
 
     // Prepare Knowledge Graph for graphviz
-    @outline       //@no_diagnostics(:TYPE_MISMATCH)
+    @outline @no_diagnostics(:TYPE_MISMATCH)
     module make_graphviz_object[KG, OPTS]
         def node(e in Entity) = KG:node(r, e) from r in RelName
         def edge(n1 in Entity, n2 in Entity) = KG:edge(r, n1, n2, xs...) from r in RelName, xs...
@@ -313,7 +313,7 @@ module se_kg
                     else {}
                     end
 
-    @inline
+    @inline @no_diagnostics(:TYPE_MISMATCH)
     def graphviz_kg[KG, OPTS] {
         graphviz[make_graphviz_object[KG, OPTS]]
     }
