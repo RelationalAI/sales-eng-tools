@@ -119,7 +119,7 @@ module create_entity
 
     def Name[x] = ^Name[x]
     def name_from_id(id, e) = create_entity:Name[id](e) and
-                                name_csv(imdb_meta:name:key, _, id)
+                                title_csv(imdb_meta:name:key, _, id)
 end
 ```
 
