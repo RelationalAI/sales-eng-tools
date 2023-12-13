@@ -30,6 +30,13 @@ module se_graph
     end
 
     @inline
+    module remove_isolated_nodes[G]
+        def is_directed = G:is_directed
+        def edge = G:edge
+        def node = first[edge]; last[edge]
+    end 
+
+    @inline
     def egonet_graphlib[G, seeds, distance] =
         induce_graph_subset[G, {more_nodes: rel:graphlib[G][:shortest_path_length][seeds, more_nodes, range[0, distance, 1]]}]
 
