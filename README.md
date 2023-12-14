@@ -59,10 +59,15 @@ Bash, Python, Julia, etc., tools for command line usage.
 
 Folder [se_lib](/se_lib) contains Rel models for with various sets of utilities:
 
-  * [util.rel](/se_lib/util.rel): collection of useful general purpose functions supplementing standard library functions
-  * [visual.rel](/se_lib/visual.rel) (**DEPRECATED**: do not use or stop using): graphviz-based visualization functions for knowledge graphs, ontology, etc.
-  * [kg.rel](/se_lib/kg.rel): collection of functions to construct, manipulate, operate on and visualize knowledge graphs based on standard data model
   * [csv.rel](/se_lib/csv.rel): CSV file parsing and loading
+  * [query.rel](/se_lib/query.rel): Tools for querying and poking around RAI database relations
+  * [kg.rel](/se_lib/kg.rel): functions to construct, manipulate, operate on and visualize knowledge graphs based on standard data model
+  * [graph.rel](/se_lib/graph.rel): functions to operate on Rel graph objects
+  * [util.rel](/se_lib/util.rel): collection of useful general purpose functions supplementing standard library functions
+  * [viz.rel](/se_lib/viz.rel): helper functions for graphviz, vega/vega-lite, and other visualization libraries
+  * [visual.rel](/se_lib/visual.rel) (**DEPRECATED**: do not use or stop using): graphviz-based visualization functions for knowledge graphs, ontology, etc.
+
+
   * [debug.rel](/se_lib/debug.rel): TBD
 
 ### util.rel
