@@ -1,3 +1,11 @@
+// *****************************************************************
+// Sales Engineering CSV data load Library
+//
+// Tools for loading CSV data into GNF data models.
+//
+// INSTALL this source: csv.rel
+// *****************************************************************
+
 // with se_util use apply
 // replace the above with fully-qualified references to se_util:apply
 // See NCDNTS-853, https://relationalai.atlassian.net/browse/NCDNTS-853
